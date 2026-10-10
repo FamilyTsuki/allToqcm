@@ -1,29 +1,55 @@
+import { ValidationError } from '../errors/ValidationError.js';
+
 export class Score {
   #pointsEarned;
   #totalPoints;
 
-  constructor(_pointsEarned, _totalPoints) {
-    throw new Error('Method not implemented');
+  constructor(pointsEarned, totalPoints) {
+    if (typeof pointsEarned !== 'number' || pointsEarned < 0) {
+      throw new ValidationError('Points earned must be a non-negative number');
+    }
+    if (typeof totalPoints !== 'number' || totalPoints <= 0) {
+      throw new ValidationError('Total points must be a positive number');
+    }
+    if (pointsEarned > totalPoints) {
+      throw new ValidationError('Points earned cannot exceed total points');
+    }
+
+    this.#pointsEarned = pointsEarned;
+    this.#totalPoints = totalPoints;
+    Object.freeze(this);
   }
 
   get pointsEarned() {
-    throw new Error('Method not implemented');
+    return this.#pointsEarned;
   }
 
   get totalPoints() {
-    throw new Error('Method not implemented');
+    return this.#totalPoints;
   }
 
   get percentage() {
-    throw new Error('Method not implemented');
+    return Math.round((this.#pointsEarned / this.#totalPoints) * 10000) / 100;
   }
 
-  isPassing(_minimumPassingPercentage) {
-    throw new Error('Method not implemented');
+  isPassing(minimumPassingPercentage = 50) {
+    return this.percentage >= minimumPassingPercentage;
   }
 
-  equals(_otherScore) {
-    throw new Error('Method not implemented');
+  equals(otherScore) {
+    if (!(otherScore instanceof Score)) {
+      return false;
+    }
+    return (
+      this.#pointsEarned === otherScore.pointsEarned && this.#totalPoints === otherScore.totalPoints
+    );
+  }
+
+  toJSON() {
+    return {
+      pointsEarned: this.#pointsEarned,
+      totalPoints: this.#totalPoints,
+      percentage: this.percentage,
+    };
   }
 }
-

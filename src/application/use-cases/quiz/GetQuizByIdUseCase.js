@@ -1,3 +1,5 @@
+import { EntityNotFoundError } from '../../../domain/errors/EntityNotFoundError.js';
+
 export class GetQuizByIdUseCase {
   #quizRepository;
 
@@ -5,8 +7,11 @@ export class GetQuizByIdUseCase {
     this.#quizRepository = quizRepository;
   }
 
-  async execute(_quizId) {
-    throw new Error('Method not implemented');
+  async execute(quizId) {
+    const quiz = await this.#quizRepository.findById(quizId);
+    if (!quiz) {
+      throw new EntityNotFoundError('Quiz', quizId);
+    }
+    return quiz;
   }
 }
-

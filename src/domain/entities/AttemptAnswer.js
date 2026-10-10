@@ -1,21 +1,29 @@
+import { ValidationError } from '../errors/ValidationError.js';
+
 export class AttemptAnswer {
   #questionId;
   #selectedOptionIds;
 
-  constructor(_questionId, _selectedOptionIds = []) {
-    throw new Error('Method not implemented');
+  constructor(questionId, selectedOptionIds = []) {
+    if (!questionId) {
+      throw new ValidationError('Question ID is required for an attempt answer');
+    }
+    this.#questionId = questionId;
+    this.#selectedOptionIds = Array.isArray(selectedOptionIds) ? [...selectedOptionIds] : [];
   }
 
   get questionId() {
-    throw new Error('Method not implemented');
+    return this.#questionId;
   }
 
   get selectedOptionIds() {
-    throw new Error('Method not implemented');
+    return [...this.#selectedOptionIds];
   }
 
   toJSON() {
-    throw new Error('Method not implemented');
+    return {
+      questionId: this.#questionId,
+      selectedOptionIds: this.#selectedOptionIds,
+    };
   }
 }
-

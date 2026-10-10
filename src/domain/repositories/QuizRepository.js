@@ -19,4 +19,3 @@ export class QuizRepository {
     throw new Error('Method not implemented');
   }
 }
-

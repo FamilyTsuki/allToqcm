@@ -1,3 +1,7 @@
+import { ValidationError } from '../errors/ValidationError.js';
+import { Question } from './Question.js';
+import crypto from 'node:crypto';
+
 export class Quiz {
   #id;
   #title;
@@ -6,56 +10,107 @@ export class Quiz {
   #createdAt;
   #updatedAt;
 
-  constructor(_id, _title, _description, _questions = [], _createdAt = null, _updatedAt = null) {
-    throw new Error('Method not implemented');
+  constructor(
+    id = crypto.randomUUID(),
+    title,
+    description = '',
+    questions = [],
+    createdAt = new Date(),
+    updatedAt = new Date(),
+  ) {
+    if (!title || typeof title !== 'string' || title.trim().length === 0) {
+      throw new ValidationError('Quiz title cannot be empty');
+    }
+
+    this.#id = id;
+    this.#title = title.trim();
+    this.#description = description ? description.trim() : '';
+    this.#questions = [];
+    this.#createdAt = createdAt instanceof Date ? createdAt : new Date(createdAt);
+    this.#updatedAt = updatedAt instanceof Date ? updatedAt : new Date(updatedAt);
+
+    for (const question of questions) {
+      this.addQuestion(question);
+    }
   }
 
   get id() {
-    throw new Error('Method not implemented');
+    return this.#id;
   }
 
   get title() {
-    throw new Error('Method not implemented');
+    return this.#title;
   }
 
   get description() {
-    throw new Error('Method not implemented');
+    return this.#description;
   }
 
   get questions() {
-    throw new Error('Method not implemented');
+    return [...this.#questions];
   }
 
   get createdAt() {
-    throw new Error('Method not implemented');
+    return this.#createdAt;
   }
 
   get updatedAt() {
-    throw new Error('Method not implemented');
+    return this.#updatedAt;
   }
 
   get totalPoints() {
-    throw new Error('Method not implemented');
+    return this.#questions.reduce((total, q) => total + q.points, 0);
   }
 
-  addQuestion(_question) {
-    throw new Error('Method not implemented');
+  addQuestion(question) {
+    const questionEntity =
+      question instanceof Question
+        ? question
+        : new Question(question.id, this.#id, question.text, question.points, question.options);
+
+    this.#questions.push(questionEntity);
+    this.#updatedAt = new Date();
   }
 
-  removeQuestion(_questionId) {
-    throw new Error('Method not implemented');
+  removeQuestion(questionId) {
+    this.#questions = this.#questions.filter((q) => q.id !== questionId);
+    this.#updatedAt = new Date();
   }
 
-  updateDetails(_title, _description) {
-    throw new Error('Method not implemented');
+  updateDetails(title, description) {
+    if (!title || typeof title !== 'string' || title.trim().length === 0) {
+      throw new ValidationError('Quiz title cannot be empty');
+    }
+    this.#title = title.trim();
+    this.#description = description ? description.trim() : '';
+    this.#updatedAt = new Date();
   }
 
   validateCompleteness() {
-    throw new Error('Method not implemented');
+    if (this.#questions.length === 0) {
+      throw new ValidationError('Quiz must contain at least one question');
+    }
+    for (const question of this.#questions) {
+      if (question.options.length < 2) {
+        throw new ValidationError(`Question "${question.text}" must have at least two options`);
+      }
+      if (!question.hasCorrectOption()) {
+        throw new ValidationError(
+          `Question "${question.text}" must have at least one correct option`,
+        );
+      }
+    }
   }
 
   toJSON() {
-    throw new Error('Method not implemented');
+    return {
+      id: this.#id,
+      title: this.#title,
+      description: this.#description,
+      totalPoints: this.totalPoints,
+      questions: this.#questions.map((q) => q.toJSON()),
+      createdAt: this.#createdAt.toISOString(),
+      updatedAt: this.#updatedAt.toISOString(),
+    };
   }
 }
-

@@ -1,3 +1,8 @@
+import { ValidationError } from '../errors/ValidationError.js';
+import { Score } from '../value-objects/Score.js';
+import { AttemptAnswer } from './AttemptAnswer.js';
+import crypto from 'node:crypto';
+
 export class QuizAttempt {
   #id;
   #quizId;
@@ -8,59 +13,108 @@ export class QuizAttempt {
   #completedAt;
 
   constructor(
-    _id,
-    _quizId,
-    _participantName,
-    _answers = [],
-    _score = null,
-    _startedAt = null,
-    _completedAt = null,
+    id = crypto.randomUUID(),
+    quizId,
+    participantName,
+    answers = [],
+    score = null,
+    startedAt = new Date(),
+    completedAt = null,
   ) {
-    throw new Error('Method not implemented');
+    if (!quizId) {
+      throw new ValidationError('Quiz ID is required');
+    }
+    if (
+      !participantName ||
+      typeof participantName !== 'string' ||
+      participantName.trim().length === 0
+    ) {
+      throw new ValidationError('Participant name cannot be empty');
+    }
+
+    this.#id = id;
+    this.#quizId = quizId;
+    this.#participantName = participantName.trim();
+    this.#answers = [];
+    this.#score = score instanceof Score ? score : null;
+    this.#startedAt = startedAt instanceof Date ? startedAt : new Date(startedAt);
+    this.#completedAt = completedAt
+      ? completedAt instanceof Date
+        ? completedAt
+        : new Date(completedAt)
+      : null;
+
+    for (const answer of answers) {
+      this.recordAnswer(answer);
+    }
   }
 
   get id() {
-    throw new Error('Method not implemented');
+    return this.#id;
   }
 
   get quizId() {
-    throw new Error('Method not implemented');
+    return this.#quizId;
   }
 
   get participantName() {
-    throw new Error('Method not implemented');
+    return this.#participantName;
   }
 
   get answers() {
-    throw new Error('Method not implemented');
+    return [...this.#answers];
   }
 
   get score() {
-    throw new Error('Method not implemented');
+    return this.#score;
   }
 
   get startedAt() {
-    throw new Error('Method not implemented');
+    return this.#startedAt;
   }
 
   get completedAt() {
-    throw new Error('Method not implemented');
+    return this.#completedAt;
   }
 
   get isCompleted() {
-    throw new Error('Method not implemented');
+    return this.#completedAt !== null;
   }
 
-  recordAnswer(_attemptAnswer) {
-    throw new Error('Method not implemented');
+  recordAnswer(attemptAnswer) {
+    if (this.isCompleted) {
+      throw new ValidationError('Cannot record answer on a completed quiz attempt');
+    }
+    const answerEntity =
+      attemptAnswer instanceof AttemptAnswer
+        ? attemptAnswer
+        : new AttemptAnswer(attemptAnswer.questionId, attemptAnswer.selectedOptionIds);
+
+    this.#answers = this.#answers.filter((a) => a.questionId !== answerEntity.questionId);
+    this.#answers.push(answerEntity);
   }
 
-  complete(_score) {
-    throw new Error('Method not implemented');
+  complete(score) {
+    if (this.isCompleted) {
+      throw new ValidationError('Quiz attempt is already completed');
+    }
+    if (!(score instanceof Score)) {
+      throw new ValidationError('A valid Score instance is required to complete attempt');
+    }
+    this.#score = score;
+    this.#completedAt = new Date();
   }
 
   toJSON() {
-    throw new Error('Method not implemented');
+    return {
+      id: this.#id,
+      quizId: this.#quizId,
+      participantName: this.#participantName,
+      answers: this.#answers.map((a) => a.toJSON()),
+      score: this.#score ? this.#score.toJSON() : null,
+      startedAt: this.#startedAt.toISOString(),
+      completedAt: this.#completedAt ? this.#completedAt.toISOString() : null,
+      isCompleted: this.isCompleted,
+    };
   }
 }
-

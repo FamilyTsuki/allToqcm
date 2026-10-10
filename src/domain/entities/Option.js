@@ -1,34 +1,49 @@
+import { ValidationError } from '../errors/ValidationError.js';
+import crypto from 'node:crypto';
+
 export class Option {
   #id;
   #text;
   #isCorrect;
 
-  constructor(_id, _text, _isCorrect) {
-    throw new Error('Method not implemented');
+  constructor(id = crypto.randomUUID(), text, isCorrect = false) {
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      throw new ValidationError('Option text cannot be empty');
+    }
+
+    this.#id = id;
+    this.#text = text.trim();
+    this.#isCorrect = Boolean(isCorrect);
   }
 
   get id() {
-    throw new Error('Method not implemented');
+    return this.#id;
   }
 
   get text() {
-    throw new Error('Method not implemented');
+    return this.#text;
   }
 
   get isCorrect() {
-    throw new Error('Method not implemented');
+    return this.#isCorrect;
   }
 
-  updateText(_newText) {
-    throw new Error('Method not implemented');
+  updateText(newText) {
+    if (!newText || typeof newText !== 'string' || newText.trim().length === 0) {
+      throw new ValidationError('Option text cannot be empty');
+    }
+    this.#text = newText.trim();
   }
 
-  setIsCorrect(_isCorrect) {
-    throw new Error('Method not implemented');
+  setIsCorrect(isCorrect) {
+    this.#isCorrect = Boolean(isCorrect);
   }
 
   toJSON() {
-    throw new Error('Method not implemented');
+    return {
+      id: this.#id,
+      text: this.#text,
+      isCorrect: this.#isCorrect,
+    };
   }
 }
-

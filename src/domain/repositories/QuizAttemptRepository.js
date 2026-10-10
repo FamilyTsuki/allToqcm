@@ -15,4 +15,3 @@ export class QuizAttemptRepository {
     throw new Error('Method not implemented');
   }
 }
-

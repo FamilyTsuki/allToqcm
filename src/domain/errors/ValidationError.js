@@ -6,4 +6,3 @@ export class ValidationError extends DomainError {
     this.details = details;
   }
 }
-

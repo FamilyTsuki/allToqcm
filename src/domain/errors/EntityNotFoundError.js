@@ -7,4 +7,3 @@ export class EntityNotFoundError extends DomainError {
     this.identifier = identifier;
   }
 }
-

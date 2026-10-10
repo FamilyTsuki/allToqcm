@@ -1,3 +1,7 @@
+import { ValidationError } from '../errors/ValidationError.js';
+import { Option } from './Option.js';
+import crypto from 'node:crypto';
+
 export class Question {
   #id;
   #quizId;
@@ -5,52 +9,93 @@ export class Question {
   #points;
   #options;
 
-  constructor(_id, _quizId, _text, _points, _options = []) {
-    throw new Error('Method not implemented');
+  constructor(id = crypto.randomUUID(), quizId, text, points = 1, options = []) {
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      throw new ValidationError('Question text cannot be empty');
+    }
+    if (typeof points !== 'number' || points <= 0) {
+      throw new ValidationError('Question points must be a positive number');
+    }
+
+    this.#id = id;
+    this.#quizId = quizId;
+    this.#text = text.trim();
+    this.#points = points;
+    this.#options = [];
+
+    for (const option of options) {
+      this.addOption(option);
+    }
   }
 
   get id() {
-    throw new Error('Method not implemented');
+    return this.#id;
   }
 
   get quizId() {
-    throw new Error('Method not implemented');
+    return this.#quizId;
   }
 
   get text() {
-    throw new Error('Method not implemented');
+    return this.#text;
   }
 
   get points() {
-    throw new Error('Method not implemented');
+    return this.#points;
   }
 
   get options() {
-    throw new Error('Method not implemented');
+    return [...this.#options];
   }
 
-  addOption(_option) {
-    throw new Error('Method not implemented');
+  addOption(option) {
+    const optionEntity =
+      option instanceof Option ? option : new Option(option.id, option.text, option.isCorrect);
+
+    this.#options.push(optionEntity);
   }
 
-  removeOption(_optionId) {
-    throw new Error('Method not implemented');
+  removeOption(optionId) {
+    this.#options = this.#options.filter((opt) => opt.id !== optionId);
   }
 
   hasCorrectOption() {
-    throw new Error('Method not implemented');
+    return this.#options.some((opt) => opt.isCorrect);
   }
 
   getCorrectOptionIds() {
-    throw new Error('Method not implemented');
+    return this.#options.filter((opt) => opt.isCorrect).map((opt) => opt.id);
   }
 
-  evaluateAnswers(_selectedOptionIds) {
-    throw new Error('Method not implemented');
+  evaluateAnswers(selectedOptionIds = []) {
+    const correctIds = this.getCorrectOptionIds();
+    if (correctIds.length === 0) {
+      return 0;
+    }
+
+    const selectedSet = new Set(selectedOptionIds);
+    const correctSet = new Set(correctIds);
+
+    if (selectedSet.size !== correctSet.size) {
+      return 0;
+    }
+
+    for (const id of correctSet) {
+      if (!selectedSet.has(id)) {
+        return 0;
+      }
+    }
+
+    return this.#points;
   }
 
   toJSON() {
-    throw new Error('Method not implemented');
+    return {
+      id: this.#id,
+      quizId: this.#quizId,
+      text: this.#text,
+      points: this.#points,
+      options: this.#options.map((opt) => opt.toJSON()),
+    };
   }
 }
-

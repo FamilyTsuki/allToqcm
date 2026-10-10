@@ -6,7 +6,6 @@ export class ListQuizzesUseCase {
   }
 
   async execute() {
-    throw new Error('Method not implemented');
+    return this.#quizRepository.findAll();
   }
 }
-

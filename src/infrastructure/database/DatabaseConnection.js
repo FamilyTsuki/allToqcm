@@ -1,20 +1,29 @@
+import pg from 'pg';
+
+const { Pool } = pg;
+
 export class DatabaseConnection {
   #pool;
 
-  constructor(_config) {
-    throw new Error('Method not implemented');
+  constructor(config = {}) {
+    this.#pool = new Pool({
+      host: config.host || process.env.DB_HOST || 'localhost',
+      port: Number(config.port || process.env.DB_PORT || 5432),
+      user: config.user || process.env.DB_USER || 'postgres',
+      password: config.password || process.env.DB_PASSWORD || 'postgres',
+      database: config.database || process.env.DB_NAME || 'qcm_db',
+    });
   }
 
-  async query(_sql, _params = []) {
-    throw new Error('Method not implemented');
+  async query(sql, params = []) {
+    return this.#pool.query(sql, params);
   }
 
   async getClient() {
-    throw new Error('Method not implemented');
+    return this.#pool.connect();
   }
 
   async close() {
-    throw new Error('Method not implemented');
+    await this.#pool.end();
   }
 }
-
