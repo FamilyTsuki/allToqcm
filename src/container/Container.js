@@ -1,100 +1,129 @@
 import { DatabaseConnection } from '../infrastructure/database/DatabaseConnection.js';
-import { PostgresQuizRepository } from '../infrastructure/repositories/PostgresQuizRepository.js';
-import { PostgresQuizAttemptRepository } from '../infrastructure/repositories/PostgresQuizAttemptRepository.js';
-import { CreateQuizUseCase } from '../application/use-cases/quiz/CreateQuizUseCase.js';
-import { GetQuizByIdUseCase } from '../application/use-cases/quiz/GetQuizByIdUseCase.js';
-import { ListQuizzesUseCase } from '../application/use-cases/quiz/ListQuizzesUseCase.js';
-import { UpdateQuizUseCase } from '../application/use-cases/quiz/UpdateQuizUseCase.js';
-import { DeleteQuizUseCase } from '../application/use-cases/quiz/DeleteQuizUseCase.js';
-import { AddQuestionUseCase } from '../application/use-cases/quiz/AddQuestionUseCase.js';
-import { RemoveQuestionUseCase } from '../application/use-cases/quiz/RemoveQuestionUseCase.js';
-import { StartQuizAttemptUseCase } from '../application/use-cases/attempt/StartQuizAttemptUseCase.js';
-import { SubmitQuizAttemptUseCase } from '../application/use-cases/attempt/SubmitQuizAttemptUseCase.js';
-import { GetAttemptResultUseCase } from '../application/use-cases/attempt/GetAttemptResultUseCase.js';
-import { QuizCreatorController } from '../presentation/controllers/QuizCreatorController.js';
-import { QuizRunnerController } from '../presentation/controllers/QuizRunnerController.js';
-import { createQuizRouter } from '../presentation/routes/quizRoutes.js';
-import { createAttemptRouter } from '../presentation/routes/attemptRoutes.js';
+import { PostgresSurveyRepository } from '../infrastructure/repositories/PostgresSurveyRepository.js';
+import { PostgresSurveyResponseRepository } from '../infrastructure/repositories/PostgresSurveyResponseRepository.js';
+import { CreateSurveyUseCase } from '../application/use-cases/survey/CreateSurveyUseCase.js';
+import { GetSurveyByIdUseCase } from '../application/use-cases/survey/GetSurveyByIdUseCase.js';
+import { ListSurveysUseCase } from '../application/use-cases/survey/ListSurveysUseCase.js';
+import { DeleteSurveyUseCase } from '../application/use-cases/survey/DeleteSurveyUseCase.js';
+import { GetSurveyStatsUseCase } from '../application/use-cases/survey/GetSurveyStatsUseCase.js';
+import { ToggleSurveyStatusUseCase } from '../application/use-cases/survey/ToggleSurveyStatusUseCase.js';
+import { DuplicateSurveyUseCase } from '../application/use-cases/survey/DuplicateSurveyUseCase.js';
+import { CompareSurveysUseCase } from '../application/use-cases/survey/CompareSurveysUseCase.js';
+import { SubmitSurveyResponseUseCase } from '../application/use-cases/response/SubmitSurveyResponseUseCase.js';
+import { QRCodeService } from '../infrastructure/services/QRCodeService.js';
+import { SurveyCreatorController } from '../presentation/controllers/SurveyCreatorController.js';
+import { SurveyRespondentController } from '../presentation/controllers/SurveyRespondentController.js';
+import { createCreatorRouter } from '../presentation/routes/creatorRoutes.js';
+import { createRespondentRouter } from '../presentation/routes/respondentRoutes.js';
 import { errorHandler } from '../presentation/middlewares/errorHandler.js';
 import { Server } from '../infrastructure/http/Server.js';
 
 export class Container {
   #databaseConnection;
-  #quizRepository;
-  #quizAttemptRepository;
-  #quizCreatorController;
-  #quizRunnerController;
-  #server;
+  #surveyRepository;
+  #surveyResponseRepository;
+  #qrCodeService;
+  #surveyCreatorController;
+  #surveyRespondentController;
+  #creatorServer;
+  #runnerServer;
 
   constructor(config = {}) {
     this.#databaseConnection = new DatabaseConnection(config.database);
-    this.#quizRepository = new PostgresQuizRepository(this.#databaseConnection);
-    this.#quizAttemptRepository = new PostgresQuizAttemptRepository(this.#databaseConnection);
+    this.#surveyRepository = new PostgresSurveyRepository(this.#databaseConnection);
+    this.#surveyResponseRepository = new PostgresSurveyResponseRepository(this.#databaseConnection);
+    this.#qrCodeService = new QRCodeService();
 
-    const createQuizUseCase = new CreateQuizUseCase(this.#quizRepository);
-    const getQuizByIdUseCase = new GetQuizByIdUseCase(this.#quizRepository);
-    const listQuizzesUseCase = new ListQuizzesUseCase(this.#quizRepository);
-    const updateQuizUseCase = new UpdateQuizUseCase(this.#quizRepository);
-    const deleteQuizUseCase = new DeleteQuizUseCase(this.#quizRepository);
-    const addQuestionUseCase = new AddQuestionUseCase(this.#quizRepository);
-    const removeQuestionUseCase = new RemoveQuestionUseCase(this.#quizRepository);
-
-    const startQuizAttemptUseCase = new StartQuizAttemptUseCase(
-      this.#quizRepository,
-      this.#quizAttemptRepository,
+    const createSurveyUseCase = new CreateSurveyUseCase(this.#surveyRepository);
+    const getSurveyByIdUseCase = new GetSurveyByIdUseCase(this.#surveyRepository);
+    const listSurveysUseCase = new ListSurveysUseCase(this.#surveyRepository);
+    const deleteSurveyUseCase = new DeleteSurveyUseCase(this.#surveyRepository);
+    const getSurveyStatsUseCase = new GetSurveyStatsUseCase(
+      this.#surveyRepository,
+      this.#surveyResponseRepository,
     );
-    const submitQuizAttemptUseCase = new SubmitQuizAttemptUseCase(
-      this.#quizRepository,
-      this.#quizAttemptRepository,
-    );
-    const getAttemptResultUseCase = new GetAttemptResultUseCase(this.#quizAttemptRepository);
+    const toggleSurveyStatusUseCase = new ToggleSurveyStatusUseCase(this.#surveyRepository);
+    const duplicateSurveyUseCase = new DuplicateSurveyUseCase(this.#surveyRepository);
+    const compareSurveysUseCase = new CompareSurveysUseCase(getSurveyStatsUseCase);
 
-    this.#quizCreatorController = new QuizCreatorController({
-      createQuizUseCase,
-      getQuizByIdUseCase,
-      listQuizzesUseCase,
-      updateQuizUseCase,
-      deleteQuizUseCase,
-      addQuestionUseCase,
-      removeQuestionUseCase,
+    const submitSurveyResponseUseCase = new SubmitSurveyResponseUseCase(
+      this.#surveyRepository,
+      this.#surveyResponseRepository,
+    );
+
+    const creatorPort = config.creatorPort || process.env.CREATOR_PORT || 3001;
+    const runnerPort = config.runnerPort || process.env.RUNNER_PORT || 3002;
+
+    this.#surveyCreatorController = new SurveyCreatorController({
+      createSurveyUseCase,
+      listSurveysUseCase,
+      getSurveyByIdUseCase,
+      deleteSurveyUseCase,
+      getSurveyStatsUseCase,
+      toggleSurveyStatusUseCase,
+      duplicateSurveyUseCase,
+      compareSurveysUseCase,
+      qrCodeService: this.#qrCodeService,
+      runnerPort,
     });
 
-    this.#quizRunnerController = new QuizRunnerController({
-      startQuizAttemptUseCase,
-      submitQuizAttemptUseCase,
-      getAttemptResultUseCase,
+    this.#surveyRespondentController = new SurveyRespondentController({
+      listSurveysUseCase,
+      getSurveyByIdUseCase,
+      submitSurveyResponseUseCase,
     });
 
-    const routes = [
-      { path: '/api/quizzes', router: createQuizRouter(this.#quizCreatorController) },
-      { path: '/api', router: createAttemptRouter(this.#quizRunnerController) },
+    const creatorRoutes = [
+      {
+        path: '/api',
+        router: createCreatorRouter(this.#surveyCreatorController),
+      },
     ];
 
-    const port = config.port || process.env.PORT || 3000;
-    this.#server = new Server(port, routes, errorHandler);
+    const runnerRoutes = [
+      {
+        path: '/api',
+        router: createRespondentRouter(this.#surveyRespondentController),
+      },
+    ];
+
+    this.#creatorServer = new Server(creatorPort, creatorRoutes, errorHandler, 'public/creator');
+    this.#runnerServer = new Server(runnerPort, runnerRoutes, errorHandler, 'public/runner');
   }
 
   get databaseConnection() {
     return this.#databaseConnection;
   }
 
-  get quizRepository() {
-    return this.#quizRepository;
+  get surveyRepository() {
+    return this.#surveyRepository;
   }
 
-  get quizAttemptRepository() {
-    return this.#quizAttemptRepository;
+  get surveyResponseRepository() {
+    return this.#surveyResponseRepository;
   }
 
-  get quizCreatorController() {
-    return this.#quizCreatorController;
+  get qrCodeService() {
+    return this.#qrCodeService;
   }
 
-  get quizRunnerController() {
-    return this.#quizRunnerController;
+  get surveyCreatorController() {
+    return this.#surveyCreatorController;
+  }
+
+  get surveyRespondentController() {
+    return this.#surveyRespondentController;
+  }
+
+  get creatorServer() {
+    return this.#creatorServer;
+  }
+
+  get runnerServer() {
+    return this.#runnerServer;
   }
 
   get server() {
-    return this.#server;
+    return this.#creatorServer;
   }
 }

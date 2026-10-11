@@ -1,19 +1,27 @@
 import express from 'express';
+import path from 'node:path';
+import { securityHeaders } from '../../presentation/middlewares/securityHeaders.js';
 
 export class Server {
   #app;
   #port;
   #serverInstance;
 
-  constructor(port = 3000, routes = [], errorHandler = null) {
+  constructor(port = 3000, routes = [], errorHandler = null, staticPath = 'public') {
     this.#port = Number(port);
     this.#app = express();
     this.#serverInstance = null;
 
-    this.#app.use(express.json());
+    this.#app.disable('x-powered-by');
+    this.#app.use(securityHeaders);
+    this.#app.use(express.json({ limit: '100kb' }));
 
-    for (const { path, router } of routes) {
-      this.#app.use(path, router);
+    if (staticPath) {
+      this.#app.use(express.static(path.resolve(staticPath)));
+    }
+
+    for (const { path: routePath, router } of routes) {
+      this.#app.use(routePath, router);
     }
 
     if (errorHandler) {
@@ -25,10 +33,18 @@ export class Server {
     return this.#app;
   }
 
+  get port() {
+    return this.#port;
+  }
+
   start() {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.#serverInstance = this.#app.listen(this.#port, () => {
         resolve(this.#serverInstance);
+      });
+
+      this.#serverInstance.once('error', (err) => {
+        reject(err);
       });
     });
   }

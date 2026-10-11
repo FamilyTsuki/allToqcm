@@ -2,28 +2,54 @@ import { ValidationError } from '../errors/ValidationError.js';
 import { Option } from './Option.js';
 import crypto from 'node:crypto';
 
+export const QUESTION_TYPES = Object.freeze({
+  SCALE: 'scale',
+  RANKING: 'ranking',
+});
+
+const DEFAULT_OPTIONS = Object.freeze([
+  "Pas du tout d'accord",
+  "Plutôt pas d'accord",
+  'Neutre / Sans avis',
+  "Plutôt d'accord",
+  "Tout à fait d'accord",
+]);
+
 export class Question {
   #id;
-  #quizId;
+  #surveyId;
   #text;
-  #points;
   #options;
+  #imageUrl;
+  #type;
 
-  constructor(id = crypto.randomUUID(), quizId, text, points = 1, options = []) {
+  constructor(
+    id = crypto.randomUUID(),
+    surveyId,
+    text,
+    options = null,
+    imageUrl = null,
+    type = QUESTION_TYPES.SCALE,
+  ) {
     if (!text || typeof text !== 'string' || text.trim().length === 0) {
       throw new ValidationError('Question text cannot be empty');
     }
-    if (typeof points !== 'number' || points <= 0) {
-      throw new ValidationError('Question points must be a positive number');
-    }
 
     this.#id = id;
-    this.#quizId = quizId;
+    this.#surveyId = surveyId;
     this.#text = text.trim();
-    this.#points = points;
     this.#options = [];
+    this.#imageUrl = imageUrl ? imageUrl.trim() : null;
+    this.#type = type === QUESTION_TYPES.RANKING ? QUESTION_TYPES.RANKING : QUESTION_TYPES.SCALE;
 
-    for (const option of options) {
+    const initialOptions =
+      options === null || options === undefined
+        ? this.#type === QUESTION_TYPES.RANKING
+          ? []
+          : DEFAULT_OPTIONS
+        : options;
+
+    for (const option of initialOptions) {
       this.addOption(option);
     }
   }
@@ -32,25 +58,37 @@ export class Question {
     return this.#id;
   }
 
-  get quizId() {
-    return this.#quizId;
+  get surveyId() {
+    return this.#surveyId;
   }
 
   get text() {
     return this.#text;
   }
 
-  get points() {
-    return this.#points;
-  }
-
   get options() {
     return [...this.#options];
   }
 
+  get imageUrl() {
+    return this.#imageUrl;
+  }
+
+  get type() {
+    return this.#type;
+  }
+
   addOption(option) {
-    const optionEntity =
-      option instanceof Option ? option : new Option(option.id, option.text, option.isCorrect);
+    if (!option) {
+      throw new ValidationError('Option cannot be empty');
+    }
+
+    if (typeof option === 'string') {
+      this.#options.push(new Option(undefined, option));
+      return;
+    }
+
+    const optionEntity = option instanceof Option ? option : new Option(option.id, option.text);
 
     this.#options.push(optionEntity);
   }
@@ -59,43 +97,14 @@ export class Question {
     this.#options = this.#options.filter((opt) => opt.id !== optionId);
   }
 
-  hasCorrectOption() {
-    return this.#options.some((opt) => opt.isCorrect);
-  }
-
-  getCorrectOptionIds() {
-    return this.#options.filter((opt) => opt.isCorrect).map((opt) => opt.id);
-  }
-
-  evaluateAnswers(selectedOptionIds = []) {
-    const correctIds = this.getCorrectOptionIds();
-    if (correctIds.length === 0) {
-      return 0;
-    }
-
-    const selectedSet = new Set(selectedOptionIds);
-    const correctSet = new Set(correctIds);
-
-    if (selectedSet.size !== correctSet.size) {
-      return 0;
-    }
-
-    for (const id of correctSet) {
-      if (!selectedSet.has(id)) {
-        return 0;
-      }
-    }
-
-    return this.#points;
-  }
-
   toJSON() {
     return {
       id: this.#id,
-      quizId: this.#quizId,
+      surveyId: this.#surveyId,
       text: this.#text,
-      points: this.#points,
       options: this.#options.map((opt) => opt.toJSON()),
+      imageUrl: this.#imageUrl,
+      type: this.#type,
     };
   }
 }

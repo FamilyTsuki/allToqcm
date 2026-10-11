@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  alltoqcm-db:
+    container_name: alltoqcm-db
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Tsuki4545!
+      POSTGRES_DB: alltoqcm_db
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - alltoqcm_pgdata:/var/lib/postgresql/data
+    networks:
+      - cosmos-alltoqcm-default
+
+  alltoqcm-app:
+    container_name: alltoqcm-app
+    image: node:20-alpine
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./:/app
+    ports:
+      - "3001:3001"
+      - "3002:3002"
+    environment:
+      NODE_ENV: production
+      CREATOR_PORT: 3001
+      RUNNER_PORT: 3002
+      DB_HOST: alltoqcm-db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: Tsuki4545!
+      DB_NAME: alltoqcm_db
+    command: sh start.sh
+    depends_on:
+      - alltoqcm-db
+    networks:
+      - cosmos-alltoqcm-default
+
+volumes:
+  alltoqcm_pgdata:
+
+networks:
+  cosmos-alltoqcm-default:
+

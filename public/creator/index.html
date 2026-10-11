@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>allToAsk - Vos Questionnaires</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="main-header">
+        <div class="logo-area">
+          <h1>allToAsk</h1>
+        </div>
+        <nav class="nav-tabs">
+          <a href="/" class="nav-tab-link active">Questionnaires</a>
+          <a href="/create.html" class="nav-tab-link">+ Nouveau</a>
+        </nav>
+      </header>
+
+      <main class="content-area">
+        <section class="surveys-view-section">
+          <div class="section-title-bar">
+            <h2>Vos Questionnaires</h2>
+            <div class="meta-actions">
+              <button id="btn-open-compare" class="btn btn-secondary btn-sm" type="button">
+                Comparer
+              </button>
+              <button id="btn-refresh-surveys" class="btn btn-ghost btn-sm" type="button">
+                Actualiser
+              </button>
+              <a href="/create.html" class="btn btn-primary btn-sm">+ Nouveau</a>
+            </div>
+          </div>
+
+          <div id="existing-surveys-list" class="surveys-grid"></div>
+
+          <div id="stats-modal" class="modal hidden">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h3 id="stats-survey-title">Résultats</h3>
+                <button id="btn-close-modal" class="btn btn-text" type="button">&times;</button>
+              </div>
+              <div class="stats-overview-bar">
+                <p id="stats-total-responses" class="stats-total"></p>
+                <div class="stats-view-tabs">
+                  <button id="btn-stats-view-bars" class="btn-tab-view active" type="button">
+                    Barres
+                  </button>
+                  <button id="btn-stats-view-radar" class="btn-tab-view" type="button">
+                    Radar
+                  </button>
+                </div>
+                <a id="btn-export-csv" href="#" class="btn btn-secondary btn-sm" download
+                  >Exporter CSV</a
+                >
+              </div>
+              <div id="stats-questions-container" class="stats-questions-container"></div>
+              <div id="stats-radar-container" class="stats-radar-container hidden"></div>
+            </div>
+          </div>
+
+          <div id="compare-modal" class="modal hidden">
+            <div class="modal-content modal-content-lg">
+              <div class="modal-header">
+                <h3>Comparateur Avant / Après</h3>
+                <button id="btn-close-compare-modal" class="btn btn-text" type="button">
+                  &times;
+                </button>
+              </div>
+              <div class="compare-selectors-bar">
+                <div class="compare-select-col">
+                  <label for="select-survey-a">Sondage 1 (Avant / Référence)</label>
+                  <select id="select-survey-a" class="select-clean"></select>
+                </div>
+                <div class="compare-select-col">
+                  <label for="select-survey-b">Sondage 2 (Après / Suivi)</label>
+                  <select id="select-survey-b" class="select-clean"></select>
+                </div>
+                <button id="btn-run-compare" class="btn btn-primary btn-sm" type="button">
+                  Comparer
+                </button>
+              </div>
+              <div id="compare-results-container" class="compare-results-container"></div>
+            </div>
+          </div>
+
+          <div id="share-modal" class="modal hidden">
+            <div class="modal-content modal-content-sm">
+              <div class="modal-header">
+                <h3 id="share-survey-title">Partager</h3>
+                <button id="btn-close-share-modal" class="btn btn-text" type="button">
+                  &times;
+                </button>
+              </div>
+              <div class="share-modal-body">
+                <div class="qr-code-frame">
+                  <img id="share-qr-image" alt="QR Code" />
+                </div>
+                <div class="qr-color-picker-row">
+                  <span class="qr-color-label">Couleur :</span>
+                  <div class="qr-color-chips" id="qr-color-chips">
+                    <button
+                      type="button"
+                      class="qr-color-chip active"
+                      data-color="#0c0c0e"
+                      style="background-color: #0c0c0e"
+                      title="Noir"
+                    ></button>
+                    <button
+                      type="button"
+                      class="qr-color-chip"
+                      data-color="#3b82f6"
+                      style="background-color: #3b82f6"
+                      title="Bleu"
+                    ></button>
+                    <button
+                      type="button"
+                      class="qr-color-chip"
+                      data-color="#10b981"
+                      style="background-color: #10b981"
+                      title="Vert"
+                    ></button>
+                    <button
+                      type="button"
+                      class="qr-color-chip"
+                      data-color="#8b5cf6"
+                      style="background-color: #8b5cf6"
+                      title="Violet"
+                    ></button>
+                    <button
+                      type="button"
+                      class="qr-color-chip"
+                      data-color="#ef4444"
+                      style="background-color: #ef4444"
+                      title="Rouge"
+                    ></button>
+                  </div>
+                </div>
+                <div class="share-input-group">
+                  <input type="text" id="share-url-input" readonly />
+                  <button type="button" id="btn-copy-url" class="btn btn-secondary btn-sm">
+                    Copier
+                  </button>
+                </div>
+                <div class="share-modal-actions">
+                  <a
+                    id="share-download-qr"
+                    download="qrcode.png"
+                    href="#"
+                    class="btn btn-secondary btn-sm"
+                    >Télécharger QR (.png)</a
+                  >
+                  <a id="share-open-link" href="#" target="_blank" class="btn btn-primary btn-sm"
+                    >Ouvrir &rarr;</a
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <div id="notification-toast" class="toast hidden"></div>
+    </div>
+
+    <script type="module" src="list.js"></script>
+  </body>
+</html>

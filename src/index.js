@@ -5,7 +5,8 @@ export async function bootstrap() {
   const container = new Container();
 
   const shutdown = async () => {
-    await container.server.stop();
+    await container.creatorServer.stop();
+    await container.runnerServer.stop();
     await container.databaseConnection.close();
     process.exit(0);
   };
@@ -13,7 +14,11 @@ export async function bootstrap() {
   process.on('SIGINT', shutdown);
   process.on('SIGTERM', shutdown);
 
-  await container.server.start();
+  await container.creatorServer.start();
+  console.info(`Creator server running on port ${container.creatorServer.port}`);
+
+  await container.runnerServer.start();
+  console.info(`Runner server running on port ${container.runnerServer.port}`);
 
   return container;
 }

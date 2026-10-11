@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>allToAsk - Donner son Avis</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="main-header">
+        <div class="logo-area">
+          <h1>allToAsk</h1>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <section id="survey-selection-stage">
+          <div class="section-title-bar">
+            <h2>Questionnaires disponibles</h2>
+            <button id="btn-refresh-surveys" class="btn btn-ghost btn-sm" type="button">
+              Actualiser
+            </button>
+          </div>
+          <div id="available-surveys-list" class="surveys-grid"></div>
+        </section>
+
+        <section id="survey-response-stage" class="hidden">
+          <div class="survey-runner-header">
+            <div class="survey-runner-nav">
+              <button id="btn-back-to-list" class="btn btn-ghost btn-sm" type="button">
+                &larr; Retour
+              </button>
+            </div>
+            <h2 id="current-survey-title"></h2>
+            <p id="current-survey-description" class="survey-runner-desc"></p>
+            <div class="survey-progress-wrapper" id="survey-progress-wrapper">
+              <span class="survey-progress-text" id="survey-progress-text">0 / 0 répondu</span>
+              <div class="survey-progress-bar">
+                <div class="survey-progress-fill" id="survey-progress-fill" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+          <form id="response-form" class="response-form">
+            <div id="survey-questions-container" class="survey-questions-container"></div>
+            <div class="form-group participant-group">
+              <input
+                type="text"
+                id="participant-name-input"
+                class="input-subtle"
+                placeholder="Votre prénom ou pseudo (optionnel, 100% anonyme par défaut)"
+              />
+            </div>
+            <div class="form-actions">
+              <button type="submit" id="btn-submit-response" class="btn btn-primary btn-large">
+                Envoyer mon avis
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section id="survey-success-stage" class="hidden">
+          <div class="success-card">
+            <div class="success-icon">&#10003;</div>
+            <h2>Merci pour votre avis !</h2>
+            <p class="success-message">Vos réponses ont bien été enregistrées.</p>
+            <button id="btn-restart" class="btn btn-primary" type="button">
+              Retour aux questionnaires
+            </button>
+          </div>
+        </section>
+
+        <section id="survey-closed-stage" class="hidden">
+          <div class="notice-card">
+            <div class="notice-icon closed-icon">&#128274;</div>
+            <h2>Questionnaire clôturé</h2>
+            <p class="notice-message">
+              Ce questionnaire est actuellement fermé et n'accepte plus de réponses.
+            </p>
+            <button id="btn-closed-back" class="btn btn-primary" type="button">
+              Retour aux questionnaires
+            </button>
+          </div>
+        </section>
+
+        <section id="survey-voted-stage" class="hidden">
+          <div class="notice-card">
+            <div class="notice-icon voted-icon">&#10003;</div>
+            <h2>Avis déjà enregistré</h2>
+            <p class="notice-message">
+              Vous avez déjà répondu à ce questionnaire sur cet appareil.
+            </p>
+            <div class="notice-actions">
+              <button id="btn-voted-back" class="btn btn-primary" type="button">
+                Retour aux questionnaires
+              </button>
+              <button id="btn-voted-revote" class="btn btn-secondary btn-sm" type="button">
+                Modifier mon vote
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <div id="notification-toast" class="toast hidden"></div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
