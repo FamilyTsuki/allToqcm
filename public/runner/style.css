@@ -919,3 +919,107 @@ body {
   opacity: 0.25;
   cursor: not-allowed;
 }
+
+.choice-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.choice-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.choice-option-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: var(--surface-secondary);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--border-radius-sm);
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.choice-option-item:hover {
+  background-color: var(--surface-hover);
+  border-color: var(--surface-border-strong);
+}
+
+.choice-option-item:active {
+  transform: scale(0.99);
+}
+
+.choice-option-item input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.choice-indicator {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--surface-border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  background-color: var(--surface-color);
+}
+
+.choice-radio-indicator {
+  border-radius: 50%;
+}
+
+.choice-checkbox-indicator {
+  border-radius: 4px;
+}
+
+.choice-option-item input:checked + .choice-indicator {
+  border-color: var(--primary-color);
+  background-color: var(--primary-color);
+}
+
+.choice-radio-indicator::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  display: none;
+}
+
+.choice-option-item input[type='radio']:checked + .choice-radio-indicator::after {
+  display: block;
+}
+
+.choice-checkbox-indicator::after {
+  content: '✓';
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  display: none;
+}
+
+.choice-option-item input[type='checkbox']:checked + .choice-checkbox-indicator::after {
+  display: block;
+}
+
+.choice-option-item:has(input:checked) {
+  border-color: var(--primary-border);
+  background-color: var(--primary-surface);
+}
+
+.choice-option-text {
+  font-size: 0.925rem;
+  font-weight: 500;
+  color: var(--text-main);
+  flex: 1;
+}

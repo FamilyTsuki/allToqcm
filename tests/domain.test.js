@@ -385,3 +385,34 @@ test('SurveyResponse constructor preserves custom submittedAt timestamp', () => 
 
   assert.equal(response.submittedAt.toISOString(), timestamp.toISOString());
 });
+
+test('Question supports choice type with custom demographic options', () => {
+  const question = new Question(
+    'q-gender',
+    's-1',
+    'Quel est votre genre ?',
+    ['Homme', 'Femme', 'Autre'],
+    null,
+    'choice',
+  );
+  assert.equal(question.type, 'choice');
+  assert.equal(question.options.length, 3);
+  assert.equal(question.options[0].text, 'Homme');
+  assert.equal(question.options[1].text, 'Femme');
+  assert.equal(question.options[2].text, 'Autre');
+  assert.equal(question.toJSON().type, 'choice');
+});
+
+test('Question supports multiple_choice type with multiple selection options', () => {
+  const question = new Question(
+    'q-multi',
+    's-1',
+    'Vos centres d’intérêt',
+    ['Sport', 'Musique', 'Cinéma'],
+    null,
+    'multiple_choice',
+  );
+  assert.equal(question.type, 'multiple_choice');
+  assert.equal(question.options.length, 3);
+  assert.equal(question.toJSON().type, 'multiple_choice');
+});

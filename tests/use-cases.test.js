@@ -828,3 +828,112 @@ test('SubmitSurveyResponseUseCase preserves ranking option IDs order verbatim', 
 
   assert.deepEqual(response.answers[0].selectedOptionIds, orderedIds);
 });
+
+test('CreateSurveyUseCase and GetSurveyStatsUseCase handle choice questions (Homme, Femme)', async () => {
+  const surveyRepo = new InMemorySurveyRepository();
+  const responseRepo = new InMemorySurveyResponseRepository();
+  const createUseCase = new CreateSurveyUseCase(surveyRepo);
+  const submitUseCase = new SubmitSurveyResponseUseCase(surveyRepo, responseRepo);
+  const statsUseCase = new GetSurveyStatsUseCase(surveyRepo, responseRepo);
+
+  const survey = await createUseCase.execute(
+    new CreateSurveyDTO({
+      title: 'Sondage Démographique',
+      questions: [
+        {
+          text: 'Genre',
+          type: 'choice',
+          options: [{ text: 'Homme' }, { text: 'Femme' }],
+        },
+      ],
+    }),
+  );
+
+  const q = survey.questions[0];
+  const optHomme = q.options[0].id;
+  const optFemme = q.options[1].id;
+
+  await submitUseCase.execute(
+    survey.id,
+    new SubmitResponseDTO({
+      participantName: 'Alex',
+      answers: [{ questionId: q.id, selectedOptionIds: [optHomme] }],
+    }),
+  );
+
+  await submitUseCase.execute(
+    survey.id,
+    new SubmitResponseDTO({
+      participantName: 'Marie',
+      answers: [{ questionId: q.id, selectedOptionIds: [optFemme] }],
+    }),
+  );
+
+  await submitUseCase.execute(
+    survey.id,
+    new SubmitResponseDTO({
+      participantName: 'Claire',
+      answers: [{ questionId: q.id, selectedOptionIds: [optFemme] }],
+    }),
+  );
+
+  const stats = await statsUseCase.execute(survey.id);
+  assert.equal(stats.totalResponses, 3);
+  assert.equal(stats.questions[0].type, 'choice');
+  assert.equal(stats.questions[0].options[0].votes, 1);
+  assert.equal(stats.questions[0].options[0].percentage, 33.33);
+  assert.equal(stats.questions[0].options[1].votes, 2);
+  assert.equal(stats.questions[0].options[1].percentage, 66.67);
+});
+
+test('SubmitSurveyResponseUseCase and GetSurveyStatsUseCase handle multiple_choice questions', async () => {
+  const surveyRepo = new InMemorySurveyRepository();
+  const responseRepo = new InMemorySurveyResponseRepository();
+  const createUseCase = new CreateSurveyUseCase(surveyRepo);
+  const submitUseCase = new SubmitSurveyResponseUseCase(surveyRepo, responseRepo);
+  const statsUseCase = new GetSurveyStatsUseCase(surveyRepo, responseRepo);
+
+  const survey = await createUseCase.execute(
+    new CreateSurveyDTO({
+      title: 'Préférences Multiples',
+      questions: [
+        {
+          text: 'Activités préférées',
+          type: 'multiple_choice',
+          options: [{ text: 'Lecture' }, { text: 'Jeux vidéo' }, { text: 'Sport' }],
+        },
+      ],
+    }),
+  );
+
+  const q = survey.questions[0];
+  const optLecture = q.options[0].id;
+  const optJeux = q.options[1].id;
+  const optSport = q.options[2].id;
+
+  await submitUseCase.execute(
+    survey.id,
+    new SubmitResponseDTO({
+      participantName: 'Paul',
+      answers: [{ questionId: q.id, selectedOptionIds: [optLecture, optSport] }],
+    }),
+  );
+
+  await submitUseCase.execute(
+    survey.id,
+    new SubmitResponseDTO({
+      participantName: 'Julie',
+      answers: [{ questionId: q.id, selectedOptionIds: [optJeux, optSport] }],
+    }),
+  );
+
+  const stats = await statsUseCase.execute(survey.id);
+  assert.equal(stats.totalResponses, 2);
+  assert.equal(stats.questions[0].type, 'multiple_choice');
+  assert.equal(stats.questions[0].options[0].votes, 1);
+  assert.equal(stats.questions[0].options[0].percentage, 50);
+  assert.equal(stats.questions[0].options[1].votes, 1);
+  assert.equal(stats.questions[0].options[1].percentage, 50);
+  assert.equal(stats.questions[0].options[2].votes, 2);
+  assert.equal(stats.questions[0].options[2].percentage, 100);
+});

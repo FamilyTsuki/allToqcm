@@ -5,6 +5,8 @@ import crypto from 'node:crypto';
 export const QUESTION_TYPES = Object.freeze({
   SCALE: 'scale',
   RANKING: 'ranking',
+  CHOICE: 'choice',
+  MULTIPLE_CHOICE: 'multiple_choice',
 });
 
 const DEFAULT_OPTIONS = Object.freeze([
@@ -40,13 +42,15 @@ export class Question {
     this.#text = text.trim();
     this.#options = [];
     this.#imageUrl = imageUrl ? imageUrl.trim() : null;
-    this.#type = type === QUESTION_TYPES.RANKING ? QUESTION_TYPES.RANKING : QUESTION_TYPES.SCALE;
+
+    const validTypes = Object.values(QUESTION_TYPES);
+    this.#type = validTypes.includes(type) ? type : QUESTION_TYPES.SCALE;
 
     const initialOptions =
       options === null || options === undefined
-        ? this.#type === QUESTION_TYPES.RANKING
-          ? []
-          : DEFAULT_OPTIONS
+        ? this.#type === QUESTION_TYPES.SCALE
+          ? DEFAULT_OPTIONS
+          : []
         : options;
 
     for (const option of initialOptions) {

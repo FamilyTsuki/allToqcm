@@ -81,8 +81,10 @@ class SurveyCreateApp {
         <input type="text" class="input-q-text" ${requiredAttr} placeholder="Écrivez votre question...">
         <div class="question-type-picker">
           <select class="select-q-type" title="Type de question">
-            <option value="scale">Échelle (1-5)</option>
-            <option value="ranking">Classement</option>
+            <option value="scale">Échelle d'avis (1-5)</option>
+            <option value="choice">Choix unique (ex: Homme / Femme)</option>
+            <option value="multiple_choice">Choix multiple (cases à cocher)</option>
+            <option value="ranking">Classement par priorité</option>
           </select>
         </div>
         <button type="button" class="btn-toggle-img" title="Ajouter une image visuelle">&#128444;</button>
@@ -96,9 +98,9 @@ class SurveyCreateApp {
         <input type="url" class="input-q-image" placeholder="URL du visuel (ex: https://.../image.png)">
       </div>
       <div class="question-ranking-container hidden">
-        <div class="ranking-options-label">Éléments à classer par priorité :</div>
+        <div class="ranking-options-label">Options de réponse :</div>
         <div class="ranking-options-list"></div>
-        <button type="button" class="btn-add-rank-item btn-ghost btn-sm">+ Ajouter un élément</button>
+        <button type="button" class="btn-add-rank-item btn-ghost btn-sm">+ Ajouter une option</button>
       </div>
     `;
 
@@ -110,6 +112,7 @@ class SurveyCreateApp {
     const imgField = card.querySelector('.question-img-field');
     const typeSelect = card.querySelector('.select-q-type');
     const rankingContainer = card.querySelector('.question-ranking-container');
+    const rankingLabel = card.querySelector('.ranking-options-label');
     const rankingList = card.querySelector('.ranking-options-list');
     const addRankBtn = card.querySelector('.btn-add-rank-item');
 
@@ -118,7 +121,7 @@ class SurveyCreateApp {
       optRow.className = 'ranking-option-row';
       optRow.innerHTML = `
         <span class="ranking-opt-bullet">&bull;</span>
-        <input type="text" class="input-rank-opt" placeholder="Choix à classer..." value="${defaultText}">
+        <input type="text" class="input-rank-opt" placeholder="Option de réponse..." value="${defaultText}">
         <button type="button" class="btn-remove-rank-opt" title="Supprimer">&times;</button>
       `;
       optRow.querySelector('.btn-remove-rank-opt').addEventListener('click', () => {
@@ -138,11 +141,26 @@ class SurveyCreateApp {
 
     typeSelect.addEventListener('change', () => {
       if (typeSelect.value === 'ranking') {
+        rankingLabel.textContent = 'Éléments à classer par priorité :';
         rankingContainer.classList.remove('hidden');
         if (rankingList.children.length === 0) {
           addRankOption('Choix 1');
           addRankOption('Choix 2');
           addRankOption('Choix 3');
+        }
+      } else if (typeSelect.value === 'choice') {
+        rankingLabel.textContent = 'Options de réponse (choix unique, ex: Homme / Femme) :';
+        rankingContainer.classList.remove('hidden');
+        if (rankingList.children.length === 0) {
+          addRankOption('Homme');
+          addRankOption('Femme');
+        }
+      } else if (typeSelect.value === 'multiple_choice') {
+        rankingLabel.textContent = 'Options de réponse (choix multiple, cases à cocher) :';
+        rankingContainer.classList.remove('hidden');
+        if (rankingList.children.length === 0) {
+          addRankOption('Option A');
+          addRankOption('Option B');
         }
       } else {
         rankingContainer.classList.add('hidden');
@@ -247,14 +265,17 @@ class SurveyCreateApp {
         const imageUrl = card.querySelector('.input-q-image').value.trim() || null;
         let options = null;
 
-        if (type === 'ranking') {
+        if (type === 'ranking' || type === 'choice' || type === 'multiple_choice') {
           const rankInputs = card.querySelectorAll('.input-rank-opt');
           const rankOpts = [...rankInputs]
             .map((inp) => inp.value.trim())
             .filter((val) => val.length > 0);
 
           if (rankOpts.length < 2) {
-            ToastNotification.show('Une question à classement nécessite au moins 2 choix', false);
+            ToastNotification.show(
+              'Une question à choix ou classement nécessite au moins 2 options',
+              false,
+            );
             return;
           }
           options = rankOpts.map((t) => ({ text: t }));

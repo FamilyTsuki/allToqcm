@@ -27,6 +27,13 @@ export class GetSurveyStatsUseCase {
         return this.#calculateRankingStats(question, responses, totalResponses);
       }
 
+      if (
+        question.type === QUESTION_TYPES.CHOICE ||
+        question.type === QUESTION_TYPES.MULTIPLE_CHOICE
+      ) {
+        return this.#calculateChoiceStats(question, responses, totalResponses);
+      }
+
       const { stats, hasVotes, averageScore } = this.#calculateScaleStats(
         question,
         responses,
@@ -120,6 +127,44 @@ export class GetSurveyStatsUseCase {
       id: question.id,
       text: question.text,
       type: QUESTION_TYPES.RANKING,
+      imageUrl: question.imageUrl,
+      options,
+    };
+  }
+
+  #calculateChoiceStats(question, responses, totalResponses) {
+    const optionVoteCounts = new Map();
+    for (const opt of question.options) {
+      optionVoteCounts.set(opt.id, 0);
+    }
+
+    for (const res of responses) {
+      const answer = res.answers.find((a) => a.questionId === question.id);
+      if (answer && Array.isArray(answer.selectedOptionIds)) {
+        for (const optId of answer.selectedOptionIds) {
+          if (optionVoteCounts.has(optId)) {
+            optionVoteCounts.set(optId, optionVoteCounts.get(optId) + 1);
+          }
+        }
+      }
+    }
+
+    const options = question.options.map((opt) => {
+      const votes = optionVoteCounts.get(opt.id) || 0;
+      const percentage = this.#calculatePercentage(votes, totalResponses);
+
+      return {
+        id: opt.id,
+        text: opt.text,
+        votes,
+        percentage,
+      };
+    });
+
+    return {
+      id: question.id,
+      text: question.text,
+      type: question.type,
       imageUrl: question.imageUrl,
       options,
     };

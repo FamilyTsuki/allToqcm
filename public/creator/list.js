@@ -333,7 +333,7 @@ class SurveyListApp {
       const descHtml = survey.description
         ? `<p class="survey-card-desc">${this.escapeHtml(survey.description)}</p>`
         : '';
-      const statusBadge = `<span class="badge-status ${survey.isClosed ? 'status-closed' : 'status-active'}">${survey.isClosed ? 'Clôturé' : 'Actif'}</span>`;
+      const statusBadge = `<span class="badge-status ${survey.isClosed ? 'status-closed' : 'status-active'}">${survey.isClosed ? 'Terminé (clôturé)' : 'En cours'}</span>`;
 
       card.innerHTML = `
         <div class="survey-card-info">
@@ -347,7 +347,7 @@ class SurveyListApp {
         <div class="survey-card-actions">
           <button class="btn btn-secondary btn-sm btn-view-stats" type="button">Résultats</button>
           <button class="btn btn-secondary btn-sm btn-share" type="button">Partager</button>
-          <button class="btn btn-secondary btn-sm btn-toggle-status" type="button">${survey.isClosed ? 'Rouvrir' : 'Clôturer'}</button>
+          <button class="btn btn-secondary btn-sm btn-toggle-status" type="button" title="${survey.isClosed ? 'Rouvrir le questionnaire' : 'Terminer le questionnaire'}">${survey.isClosed ? 'Rouvrir' : 'Terminer'}</button>
           <button class="btn btn-secondary btn-sm btn-duplicate" type="button">Dupliquer</button>
           <button class="btn-danger-ghost btn-delete-survey" type="button" title="Supprimer">&times;</button>
         </div>
@@ -365,7 +365,7 @@ class SurveyListApp {
         try {
           const updated = await this.#apiClient.toggleSurveyStatus(survey.id);
           ToastNotification.show(
-            updated.isClosed ? 'Questionnaire clôturé' : 'Questionnaire rouvert',
+            updated.isClosed ? 'Questionnaire terminé (clôturé)' : 'Questionnaire rouvert',
             true,
           );
           this.loadSurveys();
@@ -481,11 +481,17 @@ class SurveyListApp {
 
           const qScoreBadge =
             q.averageScore > 0 ? `<span class="stat-q-score">${q.averageScore} / 5</span>` : '';
+          const typeBadge =
+            q.type === 'choice'
+              ? '<span class="badge-type">Choix unique</span>'
+              : q.type === 'multiple_choice'
+                ? '<span class="badge-type">Choix multiple</span>'
+                : '';
 
           qBlock.innerHTML = `
             ${imgHtml}
             <div class="stat-question-title-row">
-              <h4>${this.escapeHtml(q.text)}</h4>
+              <h4>${this.escapeHtml(q.text)} ${typeBadge}</h4>
               ${qScoreBadge}
             </div>
             <div class="stat-bar-container">

@@ -274,6 +274,98 @@ class RespondentApp {
         `;
 
         this.setupRankingQuestion(card, question);
+      } else if (question.type === 'choice') {
+        const choicesHtml = options
+          .map(
+            (opt, idx) => `
+            <label class="choice-option-item">
+              <input type="radio" name="q_${question.id}" value="${opt.id}" data-text="${this.escapeHtml(opt.text)}">
+              <span class="choice-indicator choice-radio-indicator"></span>
+              <span class="choice-option-text">${this.escapeHtml(opt.text)}</span>
+            </label>
+          `,
+          )
+          .join('');
+
+        card.innerHTML = `
+          <div class="question-runner-header">
+            <h3><span class="q-num">${i + 1}.</span> ${this.escapeHtml(question.text)}</h3>
+          </div>
+          ${imageHtml}
+          <div class="choice-wrapper">
+            <div class="choice-options-list">
+              ${choicesHtml}
+            </div>
+            <div class="scale-selected-hint" id="hint_q_${question.id}"></div>
+          </div>
+        `;
+
+        const radios = card.querySelectorAll(`input[name="q_${question.id}"]`);
+        const hint = card.querySelector(`#hint_q_${question.id}`);
+
+        radios.forEach((radio) => {
+          radio.addEventListener('change', () => {
+            if (radio.checked) {
+              hint.textContent = `Votre choix : ${radio.dataset.text}`;
+              hint.classList.add('active');
+              card.classList.remove('question-missing');
+              this.updateProgress();
+
+              if (i + 1 < questions.length) {
+                const nextCard = document.getElementById(`card_q_${questions[i + 1].id}`);
+                const nextChecked = nextCard?.querySelector('input:checked');
+                if (nextCard && !nextChecked) {
+                  setTimeout(() => {
+                    nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }, 320);
+                }
+              }
+            }
+          });
+        });
+      } else if (question.type === 'multiple_choice') {
+        const choicesHtml = options
+          .map(
+            (opt, idx) => `
+            <label class="choice-option-item choice-checkbox-item">
+              <input type="checkbox" name="q_${question.id}" value="${opt.id}" data-text="${this.escapeHtml(opt.text)}">
+              <span class="choice-indicator choice-checkbox-indicator"></span>
+              <span class="choice-option-text">${this.escapeHtml(opt.text)}</span>
+            </label>
+          `,
+          )
+          .join('');
+
+        card.innerHTML = `
+          <div class="question-runner-header">
+            <h3><span class="q-num">${i + 1}.</span> ${this.escapeHtml(question.text)}</h3>
+          </div>
+          ${imageHtml}
+          <div class="choice-wrapper">
+            <div class="choice-options-list">
+              ${choicesHtml}
+            </div>
+            <div class="scale-selected-hint" id="hint_q_${question.id}"></div>
+          </div>
+        `;
+
+        const checkboxes = card.querySelectorAll(`input[name="q_${question.id}"]`);
+        const hint = card.querySelector(`#hint_q_${question.id}`);
+
+        checkboxes.forEach((cb) => {
+          cb.addEventListener('change', () => {
+            const checkedBoxes = card.querySelectorAll(`input[name="q_${question.id}"]:checked`);
+            if (checkedBoxes.length > 0) {
+              hint.textContent = `${checkedBoxes.length} choix sélectionné${checkedBoxes.length > 1 ? 's' : ''}`;
+              hint.classList.add('active');
+              card.classList.remove('question-missing');
+            } else {
+              hint.textContent = '';
+              hint.classList.remove('active');
+            }
+            this.updateProgress();
+          });
+        });
       } else {
         const pointsHtml = options
           .map(
@@ -447,6 +539,11 @@ class RespondentApp {
         if (list && list.children.length > 0) {
           answered++;
         }
+      } else if (q.type === 'multiple_choice') {
+        const checked = document.querySelectorAll(`input[name="q_${q.id}"]:checked`);
+        if (checked.length > 0) {
+          answered++;
+        }
       } else {
         const checked = document.querySelector(`input[name="q_${q.id}"]:checked`);
         if (checked) {
@@ -465,10 +562,10 @@ class RespondentApp {
 
     if (this.#submitButton) {
       if (answered === total) {
-        this.#submitButton.textContent = 'Envoyer mon avis ✓';
+        this.#submitButton.textContent = 'Terminer le questionnaire ✓';
         this.#submitButton.classList.add('ready');
       } else {
-        this.#submitButton.textContent = `Envoyer mon avis (${answered}/${total})`;
+        this.#submitButton.textContent = `Terminer le questionnaire (${answered}/${total})`;
         this.#submitButton.classList.remove('ready');
       }
     }
@@ -489,10 +586,12 @@ class RespondentApp {
         ? this.#currentSurvey.questions
         : [];
       let targetQ = questions.find(
-        (q) => q.type !== 'ranking' && !document.querySelector(`input[name="q_${q.id}"]:checked`),
+        (q) =>
+          (q.type === 'scale' || q.type === 'choice') &&
+          !document.querySelector(`input[name="q_${q.id}"]:checked`),
       );
       if (!targetQ && questions.length > 0) {
-        targetQ = questions.find((q) => q.type !== 'ranking');
+        targetQ = questions.find((q) => q.type === 'scale' || q.type === 'choice');
       }
 
       if (targetQ) {
@@ -532,6 +631,25 @@ class RespondentApp {
           questionId: q.id,
           selectedOptionIds,
         });
+      } else if (q.type === 'multiple_choice') {
+        const checked = document.querySelectorAll(`input[name="q_${q.id}"]:checked`);
+        if (checked.length > 0) {
+          answers.push({
+            questionId: q.id,
+            selectedOptionIds: Array.from(checked).map((cb) => cb.value),
+          });
+        } else {
+          const card = document.getElementById(`card_q_${q.id}`);
+          if (card) {
+            card.classList.add('question-missing');
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          ToastNotification.show(
+            `Veuillez sélectionner au moins un choix pour la question ${i + 1}`,
+            false,
+          );
+          return;
+        }
       } else {
         const selectedRadio = document.querySelector(`input[name="q_${q.id}"]:checked`);
         if (selectedRadio) {
