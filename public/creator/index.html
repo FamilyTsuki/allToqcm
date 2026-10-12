@@ -4,6 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>allToAsk - Vos Questionnaires</title>
+    <script>
+      (function () {
+        const saved = localStorage.getItem('alltoask_theme');
+        if (saved === 'light' || saved === 'dark') {
+          document.documentElement.setAttribute('data-theme', saved);
+        } else if (
+          window.matchMedia &&
+          window.matchMedia('(prefers-color-scheme: light)').matches
+        ) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -12,10 +27,54 @@
         <div class="logo-area">
           <h1>allToAsk</h1>
         </div>
-        <nav class="nav-tabs">
-          <a href="/" class="nav-tab-link active">Questionnaires</a>
-          <a href="/create.html" class="nav-tab-link">+ Nouveau</a>
-        </nav>
+        <div class="header-right">
+          <button
+            id="theme-toggle"
+            class="btn btn-ghost btn-icon"
+            type="button"
+            aria-label="Changer de thème"
+            title="Basculer le thème"
+          >
+            <svg
+              class="theme-icon-light"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+            <svg
+              class="theme-icon-dark"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          </button>
+          <nav class="nav-tabs">
+            <a href="/" class="nav-tab-link active">Questionnaires</a>
+            <a href="/create.html" class="nav-tab-link">+ Nouveau</a>
+          </nav>
+        </div>
       </header>
 
       <main class="content-area">
@@ -110,30 +169,30 @@
                     <button
                       type="button"
                       class="qr-color-chip"
-                      data-color="#3b82f6"
-                      style="background-color: #3b82f6"
-                      title="Bleu"
+                      data-color="#2563eb"
+                      style="background-color: #2563eb"
+                      title="Bleu ardoise"
                     ></button>
                     <button
                       type="button"
                       class="qr-color-chip"
-                      data-color="#10b981"
-                      style="background-color: #10b981"
-                      title="Vert"
+                      data-color="#475569"
+                      style="background-color: #475569"
+                      title="Ardoise"
                     ></button>
                     <button
                       type="button"
                       class="qr-color-chip"
-                      data-color="#8b5cf6"
-                      style="background-color: #8b5cf6"
-                      title="Violet"
+                      data-color="#4f46e5"
+                      style="background-color: #4f46e5"
+                      title="Indigo"
                     ></button>
                     <button
                       type="button"
                       class="qr-color-chip"
-                      data-color="#ef4444"
-                      style="background-color: #ef4444"
-                      title="Rouge"
+                      data-color="#9f1239"
+                      style="background-color: #9f1239"
+                      title="Bordeaux"
                     ></button>
                   </div>
                 </div>

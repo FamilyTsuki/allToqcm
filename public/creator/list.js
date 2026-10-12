@@ -713,6 +713,18 @@ class SurveyListApp {
   }
 }
 
+function setupThemeToggle() {
+  const toggleBtn = document.getElementById('theme-toggle');
+  if (!toggleBtn) return;
+  toggleBtn.addEventListener('click', () => {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const next = isLight ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('alltoask_theme', next);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  setupThemeToggle();
   new SurveyListApp();
 });
