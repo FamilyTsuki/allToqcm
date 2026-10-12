@@ -5,14 +5,6 @@ class RespondentApiClient {
     this.#baseUrl = baseUrl;
   }
 
-  async fetchSurveys() {
-    const response = await fetch(this.#baseUrl);
-    if (!response.ok) {
-      throw new Error('Erreur lors du chargement des questionnaires');
-    }
-    return response.json();
-  }
-
   async fetchSurvey(id) {
     const response = await fetch(`${this.#baseUrl}/${id}`);
     if (!response.ok) {
@@ -38,6 +30,7 @@ class RespondentApiClient {
 class ToastNotification {
   static show(message, isSuccess = true) {
     const toast = document.getElementById('notification-toast');
+    if (!toast) return;
     toast.textContent = message;
     toast.className = `toast ${isSuccess ? 'success' : 'error'}`;
     toast.classList.remove('hidden');
@@ -50,18 +43,13 @@ class ToastNotification {
 
 class RespondentApp {
   #apiClient;
-  #surveysListContainer;
-  #selectionStage;
+  #portalStage;
+  #errorStage;
+  #errorMessage;
   #responseStage;
   #successStage;
   #closedStage;
   #votedStage;
-  #refreshButton;
-  #backButton;
-  #restartButton;
-  #closedBackButton;
-  #votedBackButton;
-  #votedRevoteButton;
   #responseForm;
   #currentSurvey;
   #progressText;
@@ -70,18 +58,13 @@ class RespondentApp {
 
   constructor() {
     this.#apiClient = new RespondentApiClient();
-    this.#surveysListContainer = document.getElementById('available-surveys-list');
-    this.#selectionStage = document.getElementById('survey-selection-stage');
+    this.#portalStage = document.getElementById('survey-portal-stage');
+    this.#errorStage = document.getElementById('survey-error-stage');
+    this.#errorMessage = document.getElementById('survey-error-message');
     this.#responseStage = document.getElementById('survey-response-stage');
     this.#successStage = document.getElementById('survey-success-stage');
     this.#closedStage = document.getElementById('survey-closed-stage');
     this.#votedStage = document.getElementById('survey-voted-stage');
-    this.#refreshButton = document.getElementById('btn-refresh-surveys');
-    this.#backButton = document.getElementById('btn-back-to-list');
-    this.#restartButton = document.getElementById('btn-restart');
-    this.#closedBackButton = document.getElementById('btn-closed-back');
-    this.#votedBackButton = document.getElementById('btn-voted-back');
-    this.#votedRevoteButton = document.getElementById('btn-voted-revote');
     this.#responseForm = document.getElementById('response-form');
     this.#progressText = document.getElementById('survey-progress-text');
     this.#progressFill = document.getElementById('survey-progress-fill');
@@ -91,18 +74,9 @@ class RespondentApp {
   }
 
   init() {
-    this.#refreshButton.addEventListener('click', () => this.loadSurveys());
-    this.#backButton.addEventListener('click', () => this.showSelectionStage());
-    this.#restartButton.addEventListener('click', () => this.showSelectionStage());
-    this.#closedBackButton.addEventListener('click', () => this.showSelectionStage());
-    this.#votedBackButton.addEventListener('click', () => this.showSelectionStage());
-    this.#votedRevoteButton.addEventListener('click', () => {
-      if (this.#currentSurvey) {
-        localStorage.removeItem(`survey_${this.#currentSurvey.id}_voted`);
-        this.renderResponseStage(this.#currentSurvey);
-      }
-    });
-    this.#responseForm.addEventListener('submit', (e) => this.handleSubmit(e));
+    if (this.#responseForm) {
+      this.#responseForm.addEventListener('submit', (e) => this.handleSubmit(e));
+    }
 
     window.addEventListener('keydown', (e) => this.handleGlobalKey(e));
 
@@ -111,68 +85,44 @@ class RespondentApp {
     if (targetSurveyId) {
       this.openSurvey(targetSurveyId);
     } else {
-      this.loadSurveys();
+      this.showPortalStage();
     }
   }
 
-  async loadSurveys() {
-    this.#surveysListContainer.innerHTML =
-      '<p class="empty-card">Chargement des questionnaires...</p>';
-    try {
-      const surveys = await this.#apiClient.fetchSurveys();
-      this.renderSurveysGrid(surveys);
-    } catch (error) {
-      this.#surveysListContainer.innerHTML = `<p class="empty-card">${error.message}</p>`;
-    }
+  #hideAllStages() {
+    if (this.#portalStage) this.#portalStage.classList.add('hidden');
+    if (this.#errorStage) this.#errorStage.classList.add('hidden');
+    if (this.#responseStage) this.#responseStage.classList.add('hidden');
+    if (this.#successStage) this.#successStage.classList.add('hidden');
+    if (this.#closedStage) this.#closedStage.classList.add('hidden');
+    if (this.#votedStage) this.#votedStage.classList.add('hidden');
   }
 
-  renderSurveysGrid(surveys) {
-    this.#surveysListContainer.innerHTML = '';
+  showPortalStage() {
+    this.#hideAllStages();
+    if (this.#portalStage) this.#portalStage.classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-    if (!Array.isArray(surveys) || surveys.length === 0) {
-      this.#surveysListContainer.innerHTML =
-        '<div class="empty-card"><p>Aucun questionnaire disponible actuellement.</p></div>';
-      return;
+  showErrorStage(message) {
+    this.#hideAllStages();
+    if (this.#errorMessage && message) {
+      this.#errorMessage.textContent = message;
     }
+    if (this.#errorStage) this.#errorStage.classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-    for (const survey of surveys) {
-      const card = document.createElement('div');
-      card.className = `survey-card ${survey.isClosed ? 'is-closed' : ''}`;
+  showClosedStage() {
+    this.#hideAllStages();
+    if (this.#closedStage) this.#closedStage.classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-      const descHtml = survey.description
-        ? `<p class="survey-card-desc">${this.escapeHtml(survey.description)}</p>`
-        : '';
-      const qCount = survey.questions?.length ?? survey.questionCount ?? 0;
-      const qCountText = `${qCount} question${qCount > 1 ? 's' : ''}`;
-      const hasVoted = localStorage.getItem(`survey_${survey.id}_voted`) === 'true';
-
-      let statusBadge = '';
-      if (survey.isClosed) {
-        statusBadge = '<span class="badge-status status-closed">Clôturé</span>';
-      } else if (hasVoted) {
-        statusBadge = '<span class="badge-status status-voted">Déjà répondu</span>';
-      }
-
-      card.innerHTML = `
-        <div class="survey-card-info">
-          <div class="survey-card-title-row">
-            <h3>${this.escapeHtml(survey.title)}</h3>
-            ${statusBadge}
-          </div>
-          ${descHtml}
-          <span class="survey-card-meta">${qCountText}</span>
-        </div>
-        <button class="btn btn-secondary btn-sm btn-participate" ${survey.isClosed ? 'disabled' : ''}>
-          ${survey.isClosed ? 'Fermé' : hasVoted ? 'Revoir &rarr;' : 'Répondre &rarr;'}
-        </button>
-      `;
-
-      card.querySelector('.btn-participate').addEventListener('click', () => {
-        this.openSurvey(survey.id);
-      });
-
-      this.#surveysListContainer.appendChild(card);
-    }
+  showVotedStage() {
+    this.#hideAllStages();
+    if (this.#votedStage) this.#votedStage.classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   async openSurvey(surveyId) {
@@ -189,33 +139,15 @@ class RespondentApp {
       }
       this.renderResponseStage(this.#currentSurvey);
     } catch (error) {
-      ToastNotification.show(error.message, false);
-      this.loadSurveys();
+      this.showErrorStage(error.message);
     }
-  }
-
-  showClosedStage() {
-    this.#selectionStage.classList.add('hidden');
-    this.#responseStage.classList.add('hidden');
-    this.#successStage.classList.add('hidden');
-    this.#votedStage.classList.add('hidden');
-    this.#closedStage.classList.remove('hidden');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  showVotedStage() {
-    this.#selectionStage.classList.add('hidden');
-    this.#responseStage.classList.add('hidden');
-    this.#successStage.classList.add('hidden');
-    this.#closedStage.classList.add('hidden');
-    this.#votedStage.classList.remove('hidden');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   renderResponseStage(survey) {
     document.getElementById('current-survey-title').textContent = survey.title;
     document.getElementById('current-survey-description').textContent = survey.description || '';
-    document.getElementById('participant-name-input').value = '';
+    const nameInput = document.getElementById('participant-name-input');
+    if (nameInput) nameInput.value = '';
 
     const questionsContainer = document.getElementById('survey-questions-container');
     questionsContainer.innerHTML = '';
@@ -277,7 +209,7 @@ class RespondentApp {
       } else if (question.type === 'choice') {
         const choicesHtml = options
           .map(
-            (opt, idx) => `
+            (opt) => `
             <label class="choice-option-item">
               <input type="radio" name="q_${question.id}" value="${opt.id}" data-text="${this.escapeHtml(opt.text)}">
               <span class="choice-indicator choice-radio-indicator"></span>
@@ -326,7 +258,7 @@ class RespondentApp {
       } else if (question.type === 'multiple_choice') {
         const choicesHtml = options
           .map(
-            (opt, idx) => `
+            (opt) => `
             <label class="choice-option-item choice-checkbox-item">
               <input type="checkbox" name="q_${question.id}" value="${opt.id}" data-text="${this.escapeHtml(opt.text)}">
               <span class="choice-indicator choice-checkbox-indicator"></span>
@@ -421,11 +353,7 @@ class RespondentApp {
     }
 
     this.updateProgress();
-
-    this.#selectionStage.classList.add('hidden');
-    this.#successStage.classList.add('hidden');
-    this.#closedStage.classList.add('hidden');
-    this.#votedStage.classList.add('hidden');
+    this.#hideAllStages();
     this.#responseStage.classList.remove('hidden');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -670,7 +598,7 @@ class RespondentApp {
     }
 
     const participantNameInput = document.getElementById('participant-name-input');
-    const participantName = participantNameInput.value.trim() || 'Anonyme';
+    const participantName = participantNameInput?.value.trim() || 'Anonyme';
 
     try {
       this.#submitButton.disabled = true;
@@ -683,28 +611,14 @@ class RespondentApp {
 
       localStorage.setItem(`survey_${this.#currentSurvey.id}_voted`, 'true');
 
-      this.#responseStage.classList.add('hidden');
-      this.#closedStage.classList.add('hidden');
-      this.#votedStage.classList.add('hidden');
+      this.#hideAllStages();
       this.#successStage.classList.remove('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       ToastNotification.show(error.message, false);
-    } finally {
       this.#submitButton.disabled = false;
       this.updateProgress();
     }
-  }
-
-  showSelectionStage() {
-    window.history.replaceState({}, '', window.location.pathname);
-    this.#responseStage.classList.add('hidden');
-    this.#successStage.classList.add('hidden');
-    this.#closedStage.classList.add('hidden');
-    this.#votedStage.classList.add('hidden');
-    this.#selectionStage.classList.remove('hidden');
-    this.loadSurveys();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   escapeHtml(text) {

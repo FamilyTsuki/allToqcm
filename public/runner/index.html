@@ -47,7 +47,7 @@
               stroke-linejoin="round"
             >
               <circle cx="12" cy="12" r="5" />
-              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="12" x2="12" y2="3" />
               <line x1="12" y1="21" x2="12" y2="23" />
               <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
               <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
@@ -74,23 +74,29 @@
       </header>
 
       <main class="content-area">
-        <section id="survey-selection-stage">
-          <div class="section-title-bar">
-            <h2>Questionnaires disponibles</h2>
-            <button id="btn-refresh-surveys" class="btn btn-ghost btn-sm" type="button">
-              Actualiser
-            </button>
+        <section id="survey-portal-stage" class="hidden">
+          <div class="notice-card">
+            <div class="notice-icon">&#128203;</div>
+            <h2>allToAsk</h2>
+            <p class="notice-message">
+              Veuillez utiliser le lien ou le QR code fourni par l'organisateur pour accéder à votre
+              questionnaire.
+            </p>
           </div>
-          <div id="available-surveys-list" class="surveys-grid"></div>
+        </section>
+
+        <section id="survey-error-stage" class="hidden">
+          <div class="notice-card">
+            <div class="notice-icon error-icon">&#9888;</div>
+            <h2>Questionnaire introuvable</h2>
+            <p id="survey-error-message" class="notice-message">
+              Le questionnaire demandé n'existe pas ou n'est plus accessible.
+            </p>
+          </div>
         </section>
 
         <section id="survey-response-stage" class="hidden">
           <div class="survey-runner-header">
-            <div class="survey-runner-nav">
-              <button id="btn-back-to-list" class="btn btn-ghost btn-sm" type="button">
-                &larr; Retour
-              </button>
-            </div>
             <h2 id="current-survey-title"></h2>
             <p id="current-survey-description" class="survey-runner-desc"></p>
             <div class="survey-progress-wrapper" id="survey-progress-wrapper">
@@ -121,13 +127,8 @@
         <section id="survey-success-stage" class="hidden">
           <div class="success-card">
             <div class="success-icon">&#10003;</div>
-            <h2>Questionnaire terminé avec succès !</h2>
-            <p class="success-message">
-              Vos réponses ont bien été enregistrées. Merci pour votre participation !
-            </p>
-            <button id="btn-restart" class="btn btn-primary" type="button">
-              Retour aux questionnaires
-            </button>
+            <h2>Merci pour votre participation !</h2>
+            <p class="success-message">Vos réponses ont bien été enregistrées.</p>
           </div>
         </section>
 
@@ -138,27 +139,16 @@
             <p class="notice-message">
               Ce questionnaire est actuellement fermé et n'accepte plus de réponses.
             </p>
-            <button id="btn-closed-back" class="btn btn-primary" type="button">
-              Retour aux questionnaires
-            </button>
           </div>
         </section>
 
         <section id="survey-voted-stage" class="hidden">
           <div class="notice-card">
             <div class="notice-icon voted-icon">&#10003;</div>
-            <h2>Avis déjà enregistré</h2>
+            <h2>Merci pour votre participation !</h2>
             <p class="notice-message">
-              Vous avez déjà répondu à ce questionnaire sur cet appareil.
+              Vos réponses ont déjà été enregistrées pour ce questionnaire.
             </p>
-            <div class="notice-actions">
-              <button id="btn-voted-back" class="btn btn-primary" type="button">
-                Retour aux questionnaires
-              </button>
-              <button id="btn-voted-revote" class="btn btn-secondary btn-sm" type="button">
-                Modifier mon vote
-              </button>
-            </div>
           </div>
         </section>
       </main>

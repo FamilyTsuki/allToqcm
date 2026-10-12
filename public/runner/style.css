@@ -715,7 +715,8 @@ body {
   font-weight: bold;
 }
 
-.notice-icon.closed-icon {
+.notice-icon.closed-icon,
+.notice-icon.error-icon {
   background-color: var(--danger-surface);
   color: var(--danger-color);
 }
