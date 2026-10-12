@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>allToAsk - Donner son Avis</title>
-    <script src="theme.js?v=2.0.2"></script>
-    <link rel="stylesheet" href="style.css?v=2.0.2" />
+    <script src="theme.js?v=2.0.3"></script>
+    <link rel="stylesheet" href="style.css?v=2.0.3" />
   </head>
   <body>
     <div class="app-container">
@@ -125,30 +125,6 @@
           </div>
           <form id="response-form" class="response-form">
             <div id="survey-questions-container" class="survey-questions-container"></div>
-            <div class="participant-card">
-              <div class="participant-header">
-                <svg
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
-                <label for="participant-name-input">Votre signature (optionnelle)</label>
-              </div>
-              <input
-                type="text"
-                id="participant-name-input"
-                class="input-participant"
-                placeholder="Votre prénom ou pseudo (100% anonyme par défaut)"
-              />
-            </div>
             <div class="form-actions">
               <button type="submit" id="btn-submit-response" class="btn btn-primary btn-large">
                 Terminer le questionnaire
@@ -244,6 +220,6 @@
       <div id="notification-toast" class="toast hidden"></div>
     </div>
 
-    <script type="module" src="app.js?v=2.0.2"></script>
+    <script type="module" src="app.js?v=2.0.3"></script>
   </body>
 </html>

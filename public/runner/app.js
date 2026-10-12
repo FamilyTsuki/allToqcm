@@ -146,8 +146,6 @@ class RespondentApp {
   renderResponseStage(survey) {
     document.getElementById('current-survey-title').textContent = survey.title;
     document.getElementById('current-survey-description').textContent = survey.description || '';
-    const nameInput = document.getElementById('participant-name-input');
-    if (nameInput) nameInput.value = '';
 
     const questionsContainer = document.getElementById('survey-questions-container');
     questionsContainer.innerHTML = '';
@@ -207,7 +205,6 @@ class RespondentApp {
             <div class="ranking-items-list" id="ranking_list_${question.id}" data-question-id="${question.id}">
               ${rankingItemsHtml}
             </div>
-            <div class="scale-selected-hint active" id="hint_q_${question.id}">Ordre par priorité (1 = plus prioritaire)</div>
           </div>
         `;
 
@@ -234,18 +231,14 @@ class RespondentApp {
             <div class="choice-options-list">
               ${choicesHtml}
             </div>
-            <div class="scale-selected-hint" id="hint_q_${question.id}"></div>
           </div>
         `;
 
         const radios = card.querySelectorAll(`input[name="q_${question.id}"]`);
-        const hint = card.querySelector(`#hint_q_${question.id}`);
 
         radios.forEach((radio) => {
           radio.addEventListener('change', () => {
             if (radio.checked) {
-              hint.textContent = `Votre choix : ${radio.dataset.text}`;
-              hint.classList.add('active');
               card.classList.remove('question-missing');
               this.updateProgress();
 
@@ -285,23 +278,16 @@ class RespondentApp {
             <div class="choice-options-list">
               ${choicesHtml}
             </div>
-            <div class="scale-selected-hint" id="hint_q_${question.id}"></div>
           </div>
         `;
 
         const checkboxes = card.querySelectorAll(`input[name="q_${question.id}"]`);
-        const hint = card.querySelector(`#hint_q_${question.id}`);
 
         checkboxes.forEach((cb) => {
           cb.addEventListener('change', () => {
             const checkedBoxes = card.querySelectorAll(`input[name="q_${question.id}"]:checked`);
             if (checkedBoxes.length > 0) {
-              hint.textContent = `${checkedBoxes.length} choix sélectionné${checkedBoxes.length > 1 ? 's' : ''}`;
-              hint.classList.add('active');
               card.classList.remove('question-missing');
-            } else {
-              hint.textContent = '';
-              hint.classList.remove('active');
             }
             this.updateProgress();
           });
@@ -328,18 +314,14 @@ class RespondentApp {
             <div class="scale-points-row">
               ${pointsHtml}
             </div>
-            <div class="scale-selected-hint" id="hint_q_${question.id}"></div>
           </div>
         `;
 
         const radios = card.querySelectorAll(`input[name="q_${question.id}"]`);
-        const hint = card.querySelector(`#hint_q_${question.id}`);
 
         radios.forEach((radio) => {
           radio.addEventListener('change', () => {
             if (radio.checked) {
-              hint.textContent = `Votre choix : ${radio.dataset.text}`;
-              hint.classList.add('active');
               card.classList.remove('question-missing');
               this.updateProgress();
 
@@ -368,7 +350,6 @@ class RespondentApp {
 
   setupRankingQuestion(card, question) {
     const list = card.querySelector(`#ranking_list_${question.id}`);
-    const hint = card.querySelector(`#hint_q_${question.id}`);
 
     const updateBadgesAndButtons = () => {
       const items = Array.from(list.querySelectorAll('.ranking-runner-item'));
@@ -385,10 +366,6 @@ class RespondentApp {
     const notifyChange = () => {
       updateBadgesAndButtons();
       card.classList.remove('question-missing');
-      if (hint) {
-        hint.textContent = 'Ordre personnalisé enregistré ✓';
-        hint.classList.add('active');
-      }
       this.updateProgress();
     };
 
@@ -605,8 +582,7 @@ class RespondentApp {
       }
     }
 
-    const participantNameInput = document.getElementById('participant-name-input');
-    const participantName = participantNameInput?.value.trim() || 'Anonyme';
+    const participantName = 'Anonyme';
 
     try {
       this.#submitButton.disabled = true;
