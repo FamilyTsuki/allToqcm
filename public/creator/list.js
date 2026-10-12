@@ -84,91 +84,6 @@ class ToastNotification {
   }
 }
 
-class RadarChartRenderer {
-  static render(container, questions) {
-    container.innerHTML = '';
-    const validQuestions = questions.filter(
-      (q) => typeof q.averageScore === 'number' && q.averageScore > 0,
-    );
-
-    if (validQuestions.length < 3) {
-      container.innerHTML =
-        '<div class="radar-empty-notice">Le graphique radar nécessite au moins 3 questions avec des avis pour tracer la toile.</div>';
-      return;
-    }
-
-    const size = 420;
-    const center = size / 2;
-    const radius = 135;
-    const totalAxes = validQuestions.length;
-
-    const levels = [1, 2, 3, 4, 5];
-    const gridPolygons = levels
-      .map((lvl) => {
-        const r = (radius * lvl) / 5;
-        const pts = validQuestions
-          .map((_, i) => {
-            const angle = (2 * Math.PI * i) / totalAxes - Math.PI / 2;
-            return `${center + r * Math.cos(angle)},${center + r * Math.sin(angle)}`;
-          })
-          .join(' ');
-        return `<polygon points="${pts}" class="radar-grid-level" />`;
-      })
-      .join('');
-
-    const spokes = validQuestions
-      .map((_, i) => {
-        const angle = (2 * Math.PI * i) / totalAxes - Math.PI / 2;
-        const x2 = center + radius * Math.cos(angle);
-        const y2 = center + radius * Math.sin(angle);
-        return `<line x1="${center}" y1="${center}" x2="${x2}" y2="${y2}" class="radar-spoke" />`;
-      })
-      .join('');
-
-    const dataPoints = validQuestions.map((q, i) => {
-      const score = Math.max(1, Math.min(5, q.averageScore));
-      const r = (radius * score) / 5;
-      const angle = (2 * Math.PI * i) / totalAxes - Math.PI / 2;
-      const x = center + r * Math.cos(angle);
-      const y = center + r * Math.sin(angle);
-      return { x, y, score, text: q.text };
-    });
-
-    const polygonPoints = dataPoints.map((p) => `${p.x},${p.y}`).join(' ');
-
-    const dots = dataPoints
-      .map(
-        (p) =>
-          `<circle cx="${p.x}" cy="${p.y}" r="4.5" class="radar-dot"><title>${p.text} : ${p.score}/5</title></circle>`,
-      )
-      .join('');
-
-    const labels = validQuestions
-      .map((q, i) => {
-        const angle = (2 * Math.PI * i) / totalAxes - Math.PI / 2;
-        const lx = center + (radius + 26) * Math.cos(angle);
-        const ly = center + (radius + 26) * Math.sin(angle);
-        const cos = Math.cos(angle);
-        const anchor = Math.abs(cos) < 0.25 ? 'middle' : cos > 0 ? 'start' : 'end';
-        const shortText = q.text.length > 22 ? q.text.slice(0, 21) + '…' : q.text;
-        return `<text x="${lx}" y="${ly}" class="radar-label" text-anchor="${anchor}">${shortText} (${q.averageScore}/5)</text>`;
-      })
-      .join('');
-
-    container.innerHTML = `
-      <div class="radar-svg-wrapper">
-        <svg viewBox="0 0 ${size} ${size}" class="radar-svg">
-          ${gridPolygons}
-          ${spokes}
-          <polygon points="${polygonPoints}" class="radar-polygon" />
-          ${dots}
-          ${labels}
-        </svg>
-      </div>
-    `;
-  }
-}
-
 class SurveyListApp {
   #apiClient;
   #surveysListContainer;
@@ -184,9 +99,6 @@ class SurveyListApp {
   #selectSurveyA;
   #selectSurveyB;
   #compareResultsContainer;
-  #statsBarsTab;
-  #statsRadarTab;
-  #statsRadarContainer;
   #statsQuestionsContainer;
   #currentShareSurveyId;
   #currentStatsData;
@@ -208,10 +120,7 @@ class SurveyListApp {
     this.#selectSurveyB = document.getElementById('select-survey-b');
     this.#compareResultsContainer = document.getElementById('compare-results-container');
 
-    this.#statsBarsTab = document.getElementById('btn-stats-view-bars');
-    this.#statsRadarTab = document.getElementById('btn-stats-view-radar');
     this.#statsQuestionsContainer = document.getElementById('stats-questions-container');
-    this.#statsRadarContainer = document.getElementById('stats-radar-container');
 
     this.init();
   }
@@ -224,9 +133,6 @@ class SurveyListApp {
     this.#openCompareButton.addEventListener('click', () => this.openCompareModal());
     this.#closeCompareModalButton.addEventListener('click', () => this.closeCompareModal());
     this.#runCompareButton.addEventListener('click', () => this.runComparison());
-
-    this.#statsBarsTab.addEventListener('click', () => this.switchStatsView('bars'));
-    this.#statsRadarTab.addEventListener('click', () => this.switchStatsView('radar'));
 
     this.#statsModal.addEventListener('click', (e) => {
       if (e.target === this.#statsModal) {
@@ -281,23 +187,6 @@ class SurveyListApp {
     });
 
     this.loadSurveys();
-  }
-
-  switchStatsView(view) {
-    if (view === 'bars') {
-      this.#statsBarsTab.classList.add('active');
-      this.#statsRadarTab.classList.remove('active');
-      this.#statsQuestionsContainer.classList.remove('hidden');
-      this.#statsRadarContainer.classList.add('hidden');
-    } else {
-      this.#statsBarsTab.classList.remove('active');
-      this.#statsRadarTab.classList.add('active');
-      this.#statsQuestionsContainer.classList.add('hidden');
-      this.#statsRadarContainer.classList.remove('hidden');
-      if (this.#currentStatsData) {
-        RadarChartRenderer.render(this.#statsRadarContainer, this.#currentStatsData.questions);
-      }
-    }
   }
 
   async loadSurveys() {
@@ -435,7 +324,6 @@ class SurveyListApp {
         csvBtn.href = `/api/surveys/${surveyId}/export/csv`;
       }
       this.#statsQuestionsContainer.innerHTML = '';
-      this.switchStatsView('bars');
 
       if (stats.totalResponses === 0) {
         totalDisplay.textContent = 'Aucun avis enregistré.';
@@ -449,10 +337,11 @@ class SurveyListApp {
       }
 
       const scoreText =
-        stats.globalAverageScore > 0 ? ` • Moyenne : ${stats.globalAverageScore} / 5` : '';
+        stats.globalAverageScore > 0 ? ` • Moyenne globale : ${stats.globalAverageScore} / 5` : '';
       totalDisplay.textContent = `${stats.totalResponses} participant${stats.totalResponses > 1 ? 's' : ''}${scoreText}`;
 
-      for (const q of stats.questions) {
+      for (let i = 0; i < stats.questions.length; i++) {
+        const q = stats.questions[i];
         const qBlock = document.createElement('div');
         qBlock.className = 'stat-question-block';
 
@@ -460,68 +349,88 @@ class SurveyListApp {
           ? `<div class="stat-img-wrapper"><img src="${this.escapeHtml(q.imageUrl)}" class="stat-question-thumb" alt="Visuel" /></div>`
           : '';
 
+        let typeBadge = '';
         if (q.type === 'ranking') {
-          const podiumHtml = q.options
-            .map(
-              (opt, idx) => `
-              <div class="ranking-stat-row">
-                <span class="ranking-badge">#${idx + 1}</span>
-                <span class="ranking-text">${this.escapeHtml(opt.text)}</span>
-                <span class="ranking-points">${opt.points} pts (rang moy. ${opt.averageRank})</span>
-              </div>
-            `,
-            )
-            .join('');
-
-          qBlock.innerHTML = `
-            ${imgHtml}
-            <div class="stat-question-title-row">
-              <h4>${this.escapeHtml(q.text)} <span class="badge-type">Classement</span></h4>
-            </div>
-            <div class="stat-ranking-list">
-              ${podiumHtml}
-            </div>
-          `;
+          typeBadge = '<span class="badge-type">Classement</span>';
+        } else if (q.type === 'choice') {
+          typeBadge = '<span class="badge-type">Choix unique</span>';
+        } else if (q.type === 'multiple_choice') {
+          typeBadge = '<span class="badge-type">Choix multiple</span>';
         } else {
-          const segmentsHtml = q.options
-            .filter((opt) => opt.votes > 0)
-            .map(
-              (opt, idx) =>
-                `<div class="stat-segment segment-color-${idx % 5}" style="width: ${opt.percentage}%" title="${this.escapeHtml(opt.text)}: ${opt.percentage}%"></div>`,
-            )
-            .join('');
+          typeBadge = '<span class="badge-type">Échelle d\'avis</span>';
+        }
 
-          const chipsHtml = q.options
+        const qScoreBadge =
+          typeof q.averageScore === 'number' && q.averageScore > 0
+            ? `<span class="stat-q-score">${q.averageScore} / 5</span>`
+            : '';
+
+        if (q.type === 'ranking') {
+          const maxPoints = Math.max(...q.options.map((o) => o.points || 0), 1);
+          const rankingRowsHtml = q.options
             .map((opt, idx) => {
-              const hasVotes = opt.votes > 0;
+              const barWidth = maxPoints > 0 ? Math.round((opt.points / maxPoints) * 100) : 0;
+              const isFirst = idx === 0 && opt.points > 0;
               return `
-                <span class="stat-pill ${hasVotes ? `pill-active pill-color-${idx % 5}` : 'pill-zero'}">
-                  ${this.escapeHtml(opt.text)} : <strong>${opt.percentage}%</strong> ${hasVotes ? `(${opt.votes})` : ''}
-                </span>
+                <div class="stat-result-row">
+                  <div class="stat-ranking-badge ${isFirst ? 'is-first' : ''}">#${idx + 1}</div>
+                  <div class="stat-result-content">
+                    <div class="stat-result-header">
+                      <span class="stat-result-label ${opt.points > 0 ? 'is-active' : ''}">${this.escapeHtml(opt.text)}</span>
+                      <span class="stat-result-numbers">
+                        <strong>${opt.points} pt${opt.points > 1 ? 's' : ''}</strong>
+                        <span class="stat-result-sub">(rang moy. ${opt.averageRank})</span>
+                      </span>
+                    </div>
+                    <div class="stat-progress-track">
+                      <div class="stat-progress-fill ${isFirst ? 'is-first-fill' : ''}" style="width: ${barWidth}%"></div>
+                    </div>
+                  </div>
+                </div>
               `;
             })
             .join('');
 
-          const qScoreBadge =
-            q.averageScore > 0 ? `<span class="stat-q-score">${q.averageScore} / 5</span>` : '';
-          const typeBadge =
-            q.type === 'choice'
-              ? '<span class="badge-type">Choix unique</span>'
-              : q.type === 'multiple_choice'
-                ? '<span class="badge-type">Choix multiple</span>'
-                : '';
+          qBlock.innerHTML = `
+            ${imgHtml}
+            <div class="stat-question-title-row">
+              <h4><span class="stat-q-index">${i + 1}.</span> ${this.escapeHtml(q.text)} ${typeBadge}</h4>
+            </div>
+            <div class="stat-results-list">
+              ${rankingRowsHtml}
+            </div>
+          `;
+        } else {
+          const optionsRowsHtml = q.options
+            .map((opt) => {
+              const hasVotes = opt.votes > 0;
+              return `
+                <div class="stat-result-row">
+                  <div class="stat-result-content">
+                    <div class="stat-result-header">
+                      <span class="stat-result-label ${hasVotes ? 'is-active' : ''}">${this.escapeHtml(opt.text)}</span>
+                      <span class="stat-result-numbers">
+                        <strong>${opt.percentage}%</strong>
+                        <span class="stat-result-sub">(${opt.votes} vote${opt.votes > 1 ? 's' : ''})</span>
+                      </span>
+                    </div>
+                    <div class="stat-progress-track">
+                      <div class="stat-progress-fill ${hasVotes ? 'has-votes' : ''}" style="width: ${opt.percentage}%"></div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            })
+            .join('');
 
           qBlock.innerHTML = `
             ${imgHtml}
             <div class="stat-question-title-row">
-              <h4>${this.escapeHtml(q.text)} ${typeBadge}</h4>
+              <h4><span class="stat-q-index">${i + 1}.</span> ${this.escapeHtml(q.text)} ${typeBadge}</h4>
               ${qScoreBadge}
             </div>
-            <div class="stat-bar-container">
-              ${segmentsHtml}
-            </div>
-            <div class="stat-chips-row">
-              ${chipsHtml}
+            <div class="stat-results-list">
+              ${optionsRowsHtml}
             </div>
           `;
         }

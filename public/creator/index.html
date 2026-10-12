@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>allToAsk - Vos Questionnaires</title>
-    <script src="theme.js?v=2.0.3"></script>
-    <link rel="stylesheet" href="style.css?v=2.0.3" />
+    <script src="theme.js?v=2.0.4"></script>
+    <link rel="stylesheet" href="style.css?v=2.0.4" />
   </head>
   <body>
     <div class="app-container">
@@ -81,27 +81,23 @@
           <div id="existing-surveys-list" class="surveys-grid"></div>
 
           <div id="stats-modal" class="modal hidden">
-            <div class="modal-content">
+            <div class="modal-content modal-content-md">
               <div class="modal-header">
-                <h3 id="stats-survey-title">Résultats</h3>
-                <button id="btn-close-modal" class="btn btn-text" type="button">&times;</button>
-              </div>
-              <div class="stats-overview-bar">
-                <p id="stats-total-responses" class="stats-total"></p>
-                <div class="stats-view-tabs">
-                  <button id="btn-stats-view-bars" class="btn-tab-view active" type="button">
-                    Barres
-                  </button>
-                  <button id="btn-stats-view-radar" class="btn-tab-view" type="button">
-                    Radar
+                <div>
+                  <h3 id="stats-survey-title">Résultats</h3>
+                  <p id="stats-total-responses" class="stats-total"></p>
+                </div>
+                <div class="modal-header-actions">
+                  <a id="btn-export-csv" href="#" class="btn btn-secondary btn-sm" download title="Exporter au format CSV">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    CSV
+                  </a>
+                  <button id="btn-close-modal" class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Fermer">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
                 </div>
-                <a id="btn-export-csv" href="#" class="btn btn-secondary btn-sm" download
-                  >Exporter CSV</a
-                >
               </div>
               <div id="stats-questions-container" class="stats-questions-container"></div>
-              <div id="stats-radar-container" class="stats-radar-container hidden"></div>
             </div>
           </div>
 
@@ -109,8 +105,8 @@
             <div class="modal-content modal-content-lg">
               <div class="modal-header">
                 <h3>Comparateur Avant / Après</h3>
-                <button id="btn-close-compare-modal" class="btn btn-text" type="button">
-                  &times;
+                <button id="btn-close-compare-modal" class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Fermer">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
               </div>
               <div class="compare-selectors-bar">
@@ -134,8 +130,8 @@
             <div class="modal-content modal-content-sm">
               <div class="modal-header">
                 <h3 id="share-survey-title">Partager</h3>
-                <button id="btn-close-share-modal" class="btn btn-text" type="button">
-                  &times;
+                <button id="btn-close-share-modal" class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Fermer">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
               </div>
               <div class="share-modal-body">
@@ -209,6 +205,6 @@
       <div id="notification-toast" class="toast hidden"></div>
     </div>
 
-    <script type="module" src="list.js?v=2.0.3"></script>
+    <script type="module" src="list.js?v=2.0.4"></script>
   </body>
 </html>
