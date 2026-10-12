@@ -646,6 +646,21 @@ body {
   background-color: var(--danger-surface);
 }
 
+.btn-delete-confirming {
+  width: auto !important;
+  padding: 0.35rem 0.65rem !important;
+  background-color: var(--danger-color) !important;
+  color: #ffffff !important;
+  border-radius: var(--border-radius-sm) !important;
+  font-size: 0.775rem !important;
+  font-weight: 600 !important;
+  transition: all 0.15s ease !important;
+}
+
+.btn-delete-confirming:hover {
+  background-color: var(--danger-hover) !important;
+}
+
 .btn-large {
   padding: 0.75rem 1.5rem;
   font-size: 0.95rem;
