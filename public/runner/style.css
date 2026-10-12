@@ -535,28 +535,48 @@ body {
   color: var(--text-main);
 }
 
-.participant-group {
-  margin-top: 0.5rem;
+.participant-card {
+  background-color: var(--surface-color);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--border-radius);
+  padding: 0.85rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  transition: border-color 0.15s ease;
 }
 
-.input-subtle {
+.participant-card:focus-within {
+  border-color: var(--primary-border);
+}
+
+.participant-header {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.input-participant {
   width: 100%;
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 0.925rem;
   background-color: var(--surface-input);
-  border: 1px solid var(--surface-border-strong);
+  border: 1px solid var(--surface-border);
   border-radius: var(--border-radius-sm);
   color: var(--text-main);
-  padding: 0.65rem 0.85rem;
+  padding: 0.55rem 0.8rem;
   outline: none;
   transition: border-color 0.15s ease;
 }
 
-.input-subtle::placeholder {
+.input-participant::placeholder {
   color: var(--text-dimmed);
 }
 
-.input-subtle:focus {
+.input-participant:focus {
   border-color: var(--primary-color);
 }
 
@@ -689,7 +709,21 @@ body {
 .success-message {
   color: var(--text-muted);
   font-size: 0.925rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.success-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.775rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  background-color: var(--primary-surface);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-border);
+  letter-spacing: 0.02em;
 }
 
 .notice-card {
@@ -715,15 +749,16 @@ body {
   font-weight: bold;
 }
 
+.notice-icon.portal-icon,
+.notice-icon.voted-icon {
+  background-color: var(--primary-surface);
+  color: var(--primary-color);
+}
+
 .notice-icon.closed-icon,
 .notice-icon.error-icon {
   background-color: var(--danger-surface);
   color: var(--danger-color);
-}
-
-.notice-icon.voted-icon {
-  background-color: var(--primary-surface);
-  color: var(--primary-color);
 }
 
 .notice-card h2 {
@@ -1000,16 +1035,12 @@ body {
   display: block;
 }
 
-.choice-checkbox-indicator::after {
-  content: '✓';
-  color: #ffffff;
-  font-size: 0.75rem;
-  font-weight: 700;
-  line-height: 1;
+.choice-checkbox-indicator svg {
   display: none;
+  color: #ffffff;
 }
 
-.choice-option-item input[type='checkbox']:checked + .choice-checkbox-indicator::after {
+.choice-option-item input[type='checkbox']:checked + .choice-indicator svg {
   display: block;
 }
 

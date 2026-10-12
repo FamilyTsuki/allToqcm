@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>allToAsk - Donner son Avis</title>
-    <script src="theme.js?v=2.0.1"></script>
-    <link rel="stylesheet" href="style.css?v=2.0.1" />
+    <script src="theme.js?v=2.0.2"></script>
+    <link rel="stylesheet" href="style.css?v=2.0.2" />
   </head>
   <body>
     <div class="app-container">
@@ -33,7 +33,7 @@
               stroke-linejoin="round"
             >
               <circle cx="12" cy="12" r="5" />
-              <line x1="12" y1="12" x2="12" y2="3" />
+              <line x1="12" y1="1" x2="12" y2="3" />
               <line x1="12" y1="21" x2="12" y2="23" />
               <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
               <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
@@ -62,18 +62,49 @@
       <main class="content-area">
         <section id="survey-portal-stage" class="hidden">
           <div class="notice-card">
-            <div class="notice-icon">&#128203;</div>
-            <h2>allToAsk</h2>
+            <div class="notice-icon portal-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
+                />
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+              </svg>
+            </div>
+            <h2>Accès au questionnaire</h2>
             <p class="notice-message">
-              Veuillez utiliser le lien ou le QR code fourni par l'organisateur pour accéder à votre
-              questionnaire.
+              Veuillez utiliser le lien direct ou scanner le QR code fourni par l'organisateur pour
+              répondre à ce questionnaire.
             </p>
           </div>
         </section>
 
         <section id="survey-error-stage" class="hidden">
           <div class="notice-card">
-            <div class="notice-icon error-icon">&#9888;</div>
+            <div class="notice-icon error-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
             <h2>Questionnaire introuvable</h2>
             <p id="survey-error-message" class="notice-message">
               Le questionnaire demandé n'existe pas ou n'est plus accessible.
@@ -94,12 +125,28 @@
           </div>
           <form id="response-form" class="response-form">
             <div id="survey-questions-container" class="survey-questions-container"></div>
-            <div class="form-group participant-group">
+            <div class="participant-card">
+              <div class="participant-header">
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                <label for="participant-name-input">Votre signature (optionnelle)</label>
+              </div>
               <input
                 type="text"
                 id="participant-name-input"
-                class="input-subtle"
-                placeholder="Votre prénom ou pseudo (optionnel, 100% anonyme par défaut)"
+                class="input-participant"
+                placeholder="Votre prénom ou pseudo (100% anonyme par défaut)"
               />
             </div>
             <div class="form-actions">
@@ -112,15 +159,57 @@
 
         <section id="survey-success-stage" class="hidden">
           <div class="success-card">
-            <div class="success-icon">&#10003;</div>
+            <div class="success-icon">
+              <svg
+                width="26"
+                height="26"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            </div>
             <h2>Merci pour votre participation !</h2>
             <p class="success-message">Vos réponses ont bien été enregistrées.</p>
+            <div class="success-badge-pill">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <span>Envoi confirmé</span>
+            </div>
           </div>
         </section>
 
         <section id="survey-closed-stage" class="hidden">
           <div class="notice-card">
-            <div class="notice-icon closed-icon">&#128274;</div>
+            <div class="notice-icon closed-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </div>
             <h2>Questionnaire clôturé</h2>
             <p class="notice-message">
               Ce questionnaire est actuellement fermé et n'accepte plus de réponses.
@@ -130,7 +219,20 @@
 
         <section id="survey-voted-stage" class="hidden">
           <div class="notice-card">
-            <div class="notice-icon voted-icon">&#10003;</div>
+            <div class="notice-icon voted-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            </div>
             <h2>Merci pour votre participation !</h2>
             <p class="notice-message">
               Vos réponses ont déjà été enregistrées pour ce questionnaire.
@@ -142,6 +244,6 @@
       <div id="notification-toast" class="toast hidden"></div>
     </div>
 
-    <script type="module" src="app.js?v=2.0.1"></script>
+    <script type="module" src="app.js?v=2.0.2"></script>
   </body>
 </html>

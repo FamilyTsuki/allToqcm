@@ -333,7 +333,7 @@ class SurveyListApp {
       const descHtml = survey.description
         ? `<p class="survey-card-desc">${this.escapeHtml(survey.description)}</p>`
         : '';
-      const statusBadge = `<span class="badge-status ${survey.isClosed ? 'status-closed' : 'status-active'}">${survey.isClosed ? 'Terminé (clôturé)' : 'En cours'}</span>`;
+      const statusBadge = `<span class="badge-status ${survey.isClosed ? 'status-closed' : 'status-active'}"><span class="badge-dot"></span>${survey.isClosed ? 'Terminé' : 'En cours'}</span>`;
 
       card.innerHTML = `
         <div class="survey-card-info">
@@ -349,7 +349,9 @@ class SurveyListApp {
           <button class="btn btn-secondary btn-sm btn-share" type="button">Partager</button>
           <button class="btn btn-secondary btn-sm btn-toggle-status" type="button" title="${survey.isClosed ? 'Rouvrir le questionnaire' : 'Terminer le questionnaire'}">${survey.isClosed ? 'Rouvrir' : 'Terminer'}</button>
           <button class="btn btn-secondary btn-sm btn-duplicate" type="button">Dupliquer</button>
-          <button class="btn-danger-ghost btn-delete-survey" type="button" title="Supprimer">&times;</button>
+          <button class="btn-danger-ghost btn-delete-survey" type="button" title="Supprimer" aria-label="Supprimer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
         </div>
       `;
 

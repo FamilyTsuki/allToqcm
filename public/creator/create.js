@@ -87,11 +87,19 @@ class SurveyCreateApp {
             <option value="ranking">Classement par priorité</option>
           </select>
         </div>
-        <button type="button" class="btn-toggle-img" title="Ajouter une image visuelle">&#128444;</button>
+        <button type="button" class="btn-toggle-img" title="Ajouter une illustration" aria-label="Ajouter une illustration">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        </button>
         <div class="question-row-actions">
-          <button type="button" class="btn-reorder-q btn-move-up" title="Monter">&uarr;</button>
-          <button type="button" class="btn-reorder-q btn-move-down" title="Descendre">&darr;</button>
-          <button type="button" class="btn-remove-q" title="Supprimer">&times;</button>
+          <button type="button" class="btn-reorder-q btn-move-up" title="Monter" aria-label="Monter">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+          </button>
+          <button type="button" class="btn-reorder-q btn-move-down" title="Descendre" aria-label="Descendre">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <button type="button" class="btn-remove-q" title="Supprimer" aria-label="Supprimer">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
         </div>
       </div>
       <div class="question-img-field hidden">
@@ -122,7 +130,9 @@ class SurveyCreateApp {
       optRow.innerHTML = `
         <span class="ranking-opt-bullet">&bull;</span>
         <input type="text" class="input-rank-opt" placeholder="Option de réponse..." value="${defaultText}">
-        <button type="button" class="btn-remove-rank-opt" title="Supprimer">&times;</button>
+        <button type="button" class="btn-remove-rank-opt" title="Supprimer" aria-label="Supprimer">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
       `;
       optRow.querySelector('.btn-remove-rank-opt').addEventListener('click', () => {
         if (rankingList.children.length > 2) {

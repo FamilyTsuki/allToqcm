@@ -177,12 +177,18 @@ class RespondentApp {
           .map(
             (opt, idx) => `
             <div class="ranking-runner-item" draggable="true" data-option-id="${opt.id}">
-              <div class="ranking-drag-handle" title="Glisser pour déplacer">⋮⋮</div>
+              <div class="ranking-drag-handle" title="Glisser pour déplacer">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+              </div>
               <div class="ranking-runner-badge">${idx + 1}</div>
               <div class="ranking-runner-text">${this.escapeHtml(opt.text)}</div>
               <div class="ranking-runner-actions">
-                <button type="button" class="btn-ranking-move btn-move-up" title="Monter" ${idx === 0 ? 'disabled' : ''}>▲</button>
-                <button type="button" class="btn-ranking-move btn-move-down" title="Descendre" ${idx === options.length - 1 ? 'disabled' : ''}>▼</button>
+                <button type="button" class="btn-ranking-move btn-move-up" title="Monter" ${idx === 0 ? 'disabled' : ''} aria-label="Monter">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+                </button>
+                <button type="button" class="btn-ranking-move btn-move-down" title="Descendre" ${idx === options.length - 1 ? 'disabled' : ''} aria-label="Descendre">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </button>
               </div>
             </div>
           `,
@@ -196,7 +202,7 @@ class RespondentApp {
           ${imageHtml}
           <div class="ranking-wrapper">
             <div class="ranking-help-text">
-              <span class="ranking-icon">⇅</span> Glissez-déposez ou utilisez les flèches pour classer par priorité :
+              <span class="ranking-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 10 12 5 17 10"/><polyline points="17 14 12 19 7 14"/></svg></span> Glissez-déposez ou utilisez les flèches pour classer par priorité :
             </div>
             <div class="ranking-items-list" id="ranking_list_${question.id}" data-question-id="${question.id}">
               ${rankingItemsHtml}
@@ -261,7 +267,9 @@ class RespondentApp {
             (opt) => `
             <label class="choice-option-item choice-checkbox-item">
               <input type="checkbox" name="q_${question.id}" value="${opt.id}" data-text="${this.escapeHtml(opt.text)}">
-              <span class="choice-indicator choice-checkbox-indicator"></span>
+              <span class="choice-indicator choice-checkbox-indicator">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
               <span class="choice-option-text">${this.escapeHtml(opt.text)}</span>
             </label>
           `,
