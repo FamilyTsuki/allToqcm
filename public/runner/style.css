@@ -1,4 +1,5 @@
 :root {
+  color-scheme: dark;
   --font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --bg-color: #0c0c0e;
@@ -8,12 +9,30 @@
   --primary-color: #10b981;
   --primary-hover: #059669;
   --text-main: #f4f4f5;
-  --text-muted: #71717a;
-  --text-dimmed: #52525b;
+  --text-muted: #a1a1aa;
+  --text-dimmed: #71717a;
   --danger-color: #ef4444;
   --border-radius: 8px;
   --border-radius-sm: 6px;
   --border-radius-lg: 12px;
+}
+
+::selection {
+  background: rgba(16, 185, 129, 0.4);
+  color: #ffffff;
+}
+
+select {
+  color-scheme: dark;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--text-main);
+  -webkit-box-shadow: 0 0 0px 1000px #18181b inset;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 * {
@@ -358,7 +377,7 @@ body {
 
 .scale-point-label {
   font-size: 0.725rem;
-  color: var(--text-dimmed);
+  color: var(--text-muted);
   text-align: center;
   line-height: 1.25;
   transition: color 0.15s ease;
@@ -417,13 +436,15 @@ body {
   width: 100%;
   font-family: inherit;
   font-size: 0.875rem;
-  background-color: var(--surface-color);
-  border: 1px solid var(--surface-border);
+  background-color: #18181b;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: var(--border-radius-sm);
   color: var(--text-main);
   padding: 0.65rem 0.85rem;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .input-subtle::placeholder {
@@ -431,7 +452,8 @@ body {
 }
 
 .input-subtle:focus {
-  border-color: rgba(255, 255, 255, 0.25);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
 }
 
 .form-actions {
@@ -446,12 +468,22 @@ body {
   border-radius: var(--border-radius-sm);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    transform 0.1s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   text-decoration: none;
   gap: 0.4rem;
+  user-select: none;
+}
+
+.btn:active {
+  transform: scale(0.96);
 }
 
 .btn-sm {
@@ -765,6 +797,10 @@ body {
   background-color: rgba(255, 255, 255, 0.12);
   color: var(--text-main);
   border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-ranking-move:active:not(:disabled) {
+  transform: scale(0.9);
 }
 
 .btn-ranking-move:disabled {

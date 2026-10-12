@@ -70,8 +70,22 @@ export class SurveyCreatorController {
     const protocol = req.headers?.['x-forwarded-proto'] || req.protocol;
     const isLocal = req.hostname === 'localhost' || req.hostname === '127.0.0.1';
     const lanIp = isLocal ? this.getLocalIp() : null;
-    const hostname = hostFromEnv || lanIp || req.hostname;
-    return `${protocol}://${hostname}:${this.#runnerPort}/?survey=${surveyId}`;
+    let hostname = hostFromEnv || lanIp || req.hostname;
+
+    if (!isLocal && typeof hostname === 'string') {
+      if (hostname.startsWith('q.')) {
+        hostname = `qa.${hostname.slice(2)}`;
+      } else if (hostname.startsWith('creator.')) {
+        hostname = `runner.${hostname.slice(8)}`;
+      }
+    }
+
+    const isHttps = protocol === 'https';
+    const isIp = !isLocal && /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname);
+    const shouldIncludePort = !isHttps || isIp || isLocal;
+    const portPart = shouldIncludePort ? `:${this.#runnerPort}` : '';
+
+    return `${protocol}://${hostname}${portPart}/?survey=${surveyId}`;
   }
 
   async createSurvey(req, res, next) {
@@ -132,7 +146,12 @@ export class SurveyCreatorController {
   async getSurveyShare(req, res, next) {
     try {
       const survey = await this.#getSurveyByIdUseCase.execute(req.params.id);
-      const shareUrl = this.buildShareUrl(req, survey.id);
+      const rawCustomUrl = typeof req.query.url === 'string' ? req.query.url.trim() : '';
+      const customUrl =
+        rawCustomUrl.startsWith('http://') || rawCustomUrl.startsWith('https://')
+          ? rawCustomUrl
+          : null;
+      const shareUrl = customUrl || this.buildShareUrl(req, survey.id);
       const rawColor = typeof req.query.color === 'string' ? req.query.color.trim() : '';
       const color = /^#[0-9a-fA-F]{6}$/.test(rawColor) ? rawColor : '#000000';
       const qrCode = this.#qrCodeService

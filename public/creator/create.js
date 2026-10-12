@@ -309,13 +309,44 @@ class SurveyCreateApp {
     const copyBtn = document.getElementById('btn-copy-url');
     const closeBtn = document.getElementById('btn-close-share-modal');
 
+    let currentShareUrl = shareUrl;
+    if (!currentShareUrl.includes('//qa.') && window.location.hostname.startsWith('q.')) {
+      const deducedOrigin = window.location.origin.replace('//q.', '//qa.');
+      currentShareUrl = `${deducedOrigin}/?survey=${surveyId}`;
+    }
+
     qrImg.src = qrCode;
-    urlInput.value = shareUrl;
-    openLink.href = shareUrl;
+    urlInput.value = currentShareUrl;
+    openLink.href = currentShareUrl;
     if (downloadQrLink) {
       downloadQrLink.href = qrCode;
-      downloadQrLink.download = 'qrcode.png';
+      downloadQrLink.download = `qrcode-${surveyId}.png`;
     }
+
+    urlInput.oninput = async () => {
+      const typedUrl = urlInput.value.trim();
+      if (typedUrl.startsWith('http://') || typedUrl.startsWith('https://')) {
+        openLink.href = typedUrl;
+        const activeChip = document.querySelector('#qr-color-chips .qr-color-chip.active');
+        const color = activeChip ? activeChip.dataset.color : '#000000';
+        try {
+          const response = await fetch(
+            `/api/surveys/${surveyId}/share?color=${encodeURIComponent(color)}&url=${encodeURIComponent(typedUrl)}`,
+          );
+          if (response.ok) {
+            const data = await response.json();
+            qrImg.src = data.qrCode;
+            if (downloadQrLink) {
+              downloadQrLink.href = data.qrCode;
+            }
+          }
+        } catch {}
+      }
+    };
+
+    urlInput.onclick = () => {
+      urlInput.select();
+    };
 
     const colorChips = document.querySelectorAll('#qr-color-chips .qr-color-chip');
     colorChips.forEach((chip) => {
@@ -323,9 +354,11 @@ class SurveyCreateApp {
         colorChips.forEach((c) => c.classList.remove('active'));
         chip.classList.add('active');
         const color = chip.dataset.color;
+        const typedUrl = urlInput.value.trim();
+        const urlParam = typedUrl ? `&url=${encodeURIComponent(typedUrl)}` : '';
         try {
           const response = await fetch(
-            `/api/surveys/${surveyId}/share?color=${encodeURIComponent(color)}`,
+            `/api/surveys/${surveyId}/share?color=${encodeURIComponent(color)}${urlParam}`,
           );
           if (response.ok) {
             const data = await response.json();
@@ -340,13 +373,19 @@ class SurveyCreateApp {
 
     copyBtn.onclick = async () => {
       try {
-        await navigator.clipboard.writeText(shareUrl);
-        ToastNotification.show('Lien copié !', true);
+        await navigator.clipboard.writeText(urlInput.value);
       } catch {
         urlInput.select();
         document.execCommand('copy');
-        ToastNotification.show('Lien copié !', true);
       }
+      copyBtn.classList.add('btn-copied');
+      const origText = copyBtn.textContent;
+      copyBtn.innerHTML = '&#10003; Copi&eacute; !';
+      ToastNotification.show('Lien copié !', true);
+      setTimeout(() => {
+        copyBtn.classList.remove('btn-copied');
+        copyBtn.textContent = origText;
+      }, 2000);
     };
 
     closeBtn.onclick = () => {

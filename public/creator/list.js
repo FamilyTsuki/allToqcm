@@ -30,8 +30,11 @@ class CreatorApiClient {
     return response.json();
   }
 
-  async fetchShare(id, color = '#000000') {
-    const response = await fetch(`${this.#baseUrl}/${id}/share?color=${encodeURIComponent(color)}`);
+  async fetchShare(id, color = '#000000', customUrl = null) {
+    const urlParam = customUrl ? `&url=${encodeURIComponent(customUrl)}` : '';
+    const response = await fetch(
+      `${this.#baseUrl}/${id}/share?color=${encodeURIComponent(color)}${urlParam}`,
+    );
     if (!response.ok) {
       throw new Error('Erreur lors du chargement des informations de partage');
     }
@@ -258,8 +261,14 @@ class SurveyListApp {
         colorChips.forEach((c) => c.classList.remove('active'));
         chip.classList.add('active');
         const color = chip.dataset.color;
+        const urlInput = document.getElementById('share-url-input');
+        const customUrl = urlInput ? urlInput.value.trim() : null;
         try {
-          const share = await this.#apiClient.fetchShare(this.#currentShareSurveyId, color);
+          const share = await this.#apiClient.fetchShare(
+            this.#currentShareSurveyId,
+            color,
+            customUrl,
+          );
           document.getElementById('share-qr-image').src = share.qrCode;
           const downloadQrLink = document.getElementById('share-download-qr');
           if (downloadQrLink) {
@@ -522,19 +531,54 @@ class SurveyListApp {
       }
 
       const urlInput = document.getElementById('share-url-input');
-      urlInput.value = share.shareUrl;
-      document.getElementById('share-open-link').href = share.shareUrl;
+      const openLink = document.getElementById('share-open-link');
+      const qrImg = document.getElementById('share-qr-image');
+
+      let currentShareUrl = share.shareUrl;
+      if (!currentShareUrl.includes('//qa.') && window.location.hostname.startsWith('q.')) {
+        const deducedOrigin = window.location.origin.replace('//q.', '//qa.');
+        currentShareUrl = `${deducedOrigin}/?survey=${share.surveyId}`;
+      }
+
+      urlInput.value = currentShareUrl;
+      openLink.href = currentShareUrl;
+
+      urlInput.oninput = async () => {
+        const typedUrl = urlInput.value.trim();
+        if (typedUrl.startsWith('http://') || typedUrl.startsWith('https://')) {
+          openLink.href = typedUrl;
+          try {
+            const activeChip = document.querySelector('#qr-color-chips .qr-color-chip.active');
+            const currentColor = activeChip ? activeChip.dataset.color : '#000000';
+            const updated = await this.#apiClient.fetchShare(surveyId, currentColor, typedUrl);
+            qrImg.src = updated.qrCode;
+            if (downloadQrLink) {
+              downloadQrLink.href = updated.qrCode;
+            }
+          } catch {}
+        }
+      };
+
+      urlInput.onclick = () => {
+        urlInput.select();
+      };
 
       const copyBtn = document.getElementById('btn-copy-url');
       copyBtn.onclick = async () => {
         try {
-          await navigator.clipboard.writeText(share.shareUrl);
-          ToastNotification.show('Lien copié !', true);
+          await navigator.clipboard.writeText(urlInput.value);
         } catch {
           urlInput.select();
           document.execCommand('copy');
-          ToastNotification.show('Lien copié !', true);
         }
+        copyBtn.classList.add('btn-copied');
+        const origText = copyBtn.textContent;
+        copyBtn.innerHTML = '&#10003; Copi&eacute; !';
+        ToastNotification.show('Lien copié !', true);
+        setTimeout(() => {
+          copyBtn.classList.remove('btn-copied');
+          copyBtn.textContent = origText;
+        }, 2000);
       };
 
       this.#shareModal.classList.remove('hidden');

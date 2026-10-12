@@ -17,4 +17,3 @@ export class SurveyCsvPresenter {
     return '\uFEFF' + lines.join('\r\n');
   }
 }
-

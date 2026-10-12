@@ -382,14 +382,32 @@ test('SurveyCreatorController helpers buildShareUrl and getLocalIp behave reliab
   assert.ok(shareUrl.includes(':3002/?survey=survey-999'));
 
   process.env.PUBLIC_RUNNER_URL = 'https://vote.monpi.local';
-  const customRunnerUrl = controller.buildShareUrl({ protocol: 'http', hostname: 'localhost' }, 'survey-abc');
+  const customRunnerUrl = controller.buildShareUrl(
+    { protocol: 'http', hostname: 'localhost' },
+    'survey-abc',
+  );
   assert.equal(customRunnerUrl, 'https://vote.monpi.local/?survey=survey-abc');
   delete process.env.PUBLIC_RUNNER_URL;
 
   process.env.PUBLIC_HOST = '192.168.1.100';
-  const customHostUrl = controller.buildShareUrl({ protocol: 'http', hostname: 'localhost' }, 'survey-def');
+  const customHostUrl = controller.buildShareUrl(
+    { protocol: 'http', hostname: 'localhost' },
+    'survey-def',
+  );
   assert.equal(customHostUrl, 'http://192.168.1.100:3002/?survey=survey-def');
   delete process.env.PUBLIC_HOST;
+
+  const deducedRunnerUrl = controller.buildShareUrl(
+    { protocol: 'https', hostname: 'q.tsuki-dev.fr' },
+    'survey-xyz',
+  );
+  assert.equal(deducedRunnerUrl, 'https://qa.tsuki-dev.fr/?survey=survey-xyz');
+
+  const deducedCreatorUrl = controller.buildShareUrl(
+    { protocol: 'https', hostname: 'creator.domain.org' },
+    'survey-123',
+  );
+  assert.equal(deducedCreatorUrl, 'https://runner.domain.org/?survey=survey-123');
 });
 
 test('SurveyCreatorController toggleStatus forwards error to next', async () => {
