@@ -4,22 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>allToAsk - Nouveau Questionnaire</title>
-    <script>
-      (function () {
-        const saved = localStorage.getItem('alltoask_theme');
-        if (saved === 'light' || saved === 'dark') {
-          document.documentElement.setAttribute('data-theme', saved);
-        } else if (
-          window.matchMedia &&
-          window.matchMedia('(prefers-color-scheme: light)').matches
-        ) {
-          document.documentElement.setAttribute('data-theme', 'light');
-        } else {
-          document.documentElement.setAttribute('data-theme', 'dark');
-        }
-      })();
-    </script>
-    <link rel="stylesheet" href="style.css" />
+    <script src="theme.js?v=2.0.1"></script>
+    <link rel="stylesheet" href="style.css?v=2.0.1" />
   </head>
   <body>
     <div class="app-container">
@@ -203,6 +189,6 @@
       <div id="notification-toast" class="toast hidden"></div>
     </div>
 
-    <script type="module" src="create.js"></script>
+    <script type="module" src="create.js?v=2.0.1"></script>
   </body>
 </html>

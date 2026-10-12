@@ -17,7 +17,17 @@ export class Server {
     this.#app.use(express.json({ limit: '100kb' }));
 
     if (staticPath) {
-      this.#app.use(express.static(path.resolve(staticPath)));
+      this.#app.use(
+        express.static(path.resolve(staticPath), {
+          setHeaders: (res, filePath) => {
+            if (filePath.endsWith('.html')) {
+              res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+            } else if (filePath.endsWith('.js') || filePath.endsWith('.css')) {
+              res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+            }
+          },
+        }),
+      );
     }
 
     for (const { path: routePath, router } of routes) {
